@@ -1,1 +1,3 @@
-# Coming soon...
+# MoonHowl
+
+Twitter client written in Lua.
