@@ -1,7 +1,9 @@
 local twitter = require "luatwit"
+local tablex = require "pl.tablex"
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local img_store = require "moonhowl.img_store"
+local config = require "moonhowl.config"
 
 local account = object:extend()
 
@@ -19,8 +21,8 @@ function account:_init(cbh)
     signal.listen("a_request_image", self.request_image, self)
 end
 
-function account:login()
-    local keys = require "pl.config".read(os.getenv "HOME" .. "/.dev-keys")  --FIXME: implementar config
+function account:login(acct_name)
+    local keys = tablex.merge(config.app_keys, config.accounts[acct_name].keys, true)
     self.client = twitter.api.new(keys, self.cb_handler.http)
     self.client:set_callback_handler(self.cb_handler)
     --[[

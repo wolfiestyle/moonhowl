@@ -10,7 +10,7 @@ local app = {}
 function app:main()
     config._load()
     self.cb_handler = cb_handler:new(http.service:new())
-    self.account = account:new(self.cb_handler):login()
+    self.account = account:new(self.cb_handler):login("dev") --TODO: account gui
     self.window = ui.main_window:new(version.app_name)
     ui.main_loop()
     config._save()
