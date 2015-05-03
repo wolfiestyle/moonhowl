@@ -9,6 +9,9 @@ local account = object:extend()
 
 function account:_init(cbh)
     self.cb_handler = cbh
+    self.client = twitter.api.new(config.app_keys, cbh.http)
+    self.client:set_callback_handler(self.cb_handler)
+
     signal.listen("a_api_call", self.api_call, self)
     signal.listen("a_open_profile", self.open_profile, self)
     signal.listen("a_open_profile_id", self.open_profile_id, self)
@@ -22,9 +25,15 @@ function account:_init(cbh)
 end
 
 function account:login(acct_name)
-    local keys = tablex.merge(config.app_keys, config.accounts[acct_name].keys, true)
-    self.client = twitter.api.new(keys, self.cb_handler.http)
-    self.client:set_callback_handler(self.cb_handler)
+    if acct_name then
+        local acct = config.accounts[acct_name]
+        if acct then
+            tablex.update(self.client.oauth_config, acct.keys)
+        else
+            io.stderr:write("Error: account " .. acct_name .. " doesn't exist\n")
+        end
+    end
+
     --[[
     self.client:verify_credentials{
         _callback = function(user)
@@ -33,7 +42,6 @@ function account:login(acct_name)
         end,
     }
     ]]
-    return self
 end
 
 local function _error(msg)

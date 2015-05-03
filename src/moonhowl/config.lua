@@ -21,6 +21,9 @@ function config_mt._load()
     else
         io.stderr:write "Warning: couldn't read config file, using defaults\n"
     end
+    if not config.accounts then
+        config.accounts = {}
+    end
 end
 
 function config_mt._save()
