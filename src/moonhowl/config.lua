@@ -6,7 +6,15 @@ local xdg = require "moonhowl.xdg"
 local config = {}
 
 local defaults = require "moonhowl.defaults"
-setmetatable(config, { __index = defaults })
+setmetatable(config, {
+    __index = function(self, key)
+        local val = defaults[key]
+        if defaults._copy[key] then
+            self[key] = val
+        end
+        return val
+    end
+})
 
 local config_mt = {}
 config_mt.__index = config_mt
@@ -20,9 +28,6 @@ function config_mt._load()
         tablex.update(config, assert(pretty.read(str)))
     else
         io.stderr:write "Warning: couldn't read config file, using defaults\n"
-    end
-    if not config.accounts then
-        config.accounts = {}
     end
 end
 
