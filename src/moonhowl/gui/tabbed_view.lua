@@ -14,6 +14,13 @@ function tabbed_view:_init()
         on_switch_page = self:bind(self.handle__on_switch_page),
     }
 
+    local cmd_new_tab = Gtk.ToolButton{
+        icon_name = "list-add",
+        on_clicked = signal.bind_emit("ui_new_tab"),
+    }
+    cmd_new_tab:show()
+    self.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
+
     signal.listen("ui_new_tab", self.signal_new_tab, self)
     signal.listen("ui_close_tab", self.signal_close_tab, self)
     signal.listen("ui_set_location", self.signal_set_location, self)

@@ -38,13 +38,6 @@ function main_window:_init(title)
 
     self.revealer = self.handle.child.revealer
 
-    local cmd_new_tab = Gtk.ToolButton{
-        icon_name = "list-add",
-        on_clicked = signal.bind_emit("ui_new_tab"),
-    }
-    cmd_new_tab:show()
-    self.tabs.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
-
     signal.listen("ui_compose", self.signal_compose, self)
     signal.listen("ui_tweet_sent", self.signal_tweet_sent, self)
     signal.listen("ui_message", self.signal_message, self)
