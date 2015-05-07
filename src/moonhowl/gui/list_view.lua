@@ -14,7 +14,9 @@ function list_view:_init()
 end
 
 function list_view:add(obj)
-    self.list:add(obj.handle)
+    local row = Gtk.ListBoxRow{ obj.handle, activatable = false, margin = 5 }
+    row:show()
+    self.list:add(row)
 end
 
 return list_view
