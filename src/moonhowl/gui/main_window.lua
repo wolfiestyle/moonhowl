@@ -52,10 +52,6 @@ function main_window:_init(title)
     self.handle:show_all()
 end
 
-function main_window:show_all()
-    self.handle:show_all()
-end
-
 function main_window:handle__on_configure(w, ev)
     local cw = config.window
     cw.x, cw.y = ev.x, ev.y
