@@ -99,8 +99,8 @@ function tabbed_view:signal_close_tab(tab)
     end
 end
 
-function tabbed_view:signal_set_location(location)
-    print("set_location", location.uri)
+function tabbed_view:signal_set_location(loc)
+    print("set_location", loc.uri)
     local page, id = self:get_current_page()
     if page ~= nil then
         page.temp_uri = nil
@@ -108,8 +108,8 @@ function tabbed_view:signal_set_location(location)
     if page == nil or page.protected then
         page, id = self:signal_new_tab()
     end
-    page.location = location
-    config.tabs[id + 1] = location.uri
+    page.location = loc
+    config.tabs[id + 1] = loc.uri
     signal.emit("ui_set_current_tab", page)
 end
 
