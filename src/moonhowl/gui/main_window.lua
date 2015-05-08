@@ -43,8 +43,6 @@ function main_window:_init(title)
     signal.listen("ui_message", self.signal_message, self)
     signal.listen("ui_set_current_tab", self.signal_set_current_tab, self)
 
-    signal.emit "ui_new_tab"  -- action widget not visible until a tab is added
-
     if cw.x and cw.y then
         self.handle:move(cw.x, cw.y)
     end
