@@ -4,6 +4,7 @@ local http = require "luatwit.http"
 local cb_handler = require "moonhowl.cb_handler"
 local config = require "moonhowl.config"
 local version = require "moonhowl.version"
+local signal = require "moonhowl.signal"
 
 local app = {}
 
@@ -13,6 +14,7 @@ function app:main()
     self.account = account:new(self.cb_handler)
     self.account:login("dev") --TODO: account gui
     self.window = ui.main_window:new(version.app_name)
+    signal.emit "ui_refresh_all"
     ui.main_loop()
     config._save()
 end

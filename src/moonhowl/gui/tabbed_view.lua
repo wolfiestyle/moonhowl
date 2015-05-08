@@ -27,6 +27,7 @@ function tabbed_view:_init()
     signal.listen("ui_close_tab", self.signal_close_tab, self)
     signal.listen("ui_set_location", self.signal_set_location, self)
     signal.listen("ui_refresh", self.signal_refresh, self)
+    signal.listen("ui_refresh_all", self.signal_refresh_all, self)
 
     self.child = {}
 
@@ -117,6 +118,14 @@ function tabbed_view:signal_refresh()
     local page = self:get_current_page()
     if page.location then
         page:location()
+    end
+end
+
+function tabbed_view:signal_refresh_all()
+    for _, page in pairs(self.child) do
+        if page.location then
+            page:location()
+        end
     end
 end
 
