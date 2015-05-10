@@ -9,10 +9,7 @@ local main_window = object:extend()
 
 function main_window:_init(title)
     self._title = title
-    self.navbar = ui.nav_bar:new()
-    self.tabs = ui.tabbed_view:new()
-    self.infobar = ui.info_bar:new()
-    self.tweet_entry = ui.tweet_entry:new()
+    self.main_ui = ui.main_ui:new()
 
     local cw = config.window
     self.handle = Gtk.Window{
@@ -22,25 +19,9 @@ function main_window:_init(title)
         on_destroy = Gtk.main_quit,
         on_configure_event = self:bind(self.handle__on_configure),
 
-        Gtk.Box{
-            orientation = Gtk.Orientation.VERTICAL,
-            spacing = 3,
-
-            self.navbar.handle,
-            self.tabs.handle,
-            self.infobar.handle,
-            Gtk.Revealer{
-                id = "revealer",
-                self.tweet_entry.handle,
-            },
-        },
+        self.main_ui.handle,
     }
 
-    self.revealer = self.handle.child.revealer
-
-    signal.listen("ui_compose", self.signal_compose, self)
-    signal.listen("ui_tweet_sent", self.signal_tweet_sent, self)
-    signal.listen("ui_message", self.signal_message, self)
     signal.listen("ui_set_current_tab", self.signal_set_current_tab, self)
 
     if cw.x and cw.y then
@@ -54,19 +35,6 @@ function main_window:handle__on_configure(w, ev)
     local cw = config.window
     cw.x, cw.y = ev.x, ev.y
     cw.width, cw.height = ev.width, ev.height
-end
-
-function main_window:signal_compose()
-    self.revealer:set_reveal_child(true)
-end
-
-function main_window:signal_tweet_sent(tweet)
-    self.revealer:set_reveal_child(false)
-    self.infobar:show "Tweet sent!"
-end
-
-function main_window:signal_message(str, is_err)
-    self.infobar:show(str, is_err)
 end
 
 function main_window:signal_set_current_tab(page)
