@@ -17,7 +17,7 @@ function main_window:_init(title)
         default_width = cw.width,
         default_height = cw.height,
         on_destroy = Gtk.main_quit,
-        on_configure_event = self:bind(self.handle__on_configure),
+        on_configure_event = self.handle__on_configure,
 
         self.main_ui.handle,
     }
@@ -31,7 +31,7 @@ function main_window:_init(title)
     self.handle:show_all()
 end
 
-function main_window:handle__on_configure(w, ev)
+function main_window.handle__on_configure(w, ev)
     local cw = config.window
     cw.x, cw.y = ev.x, ev.y
     cw.width, cw.height = ev.width, ev.height
