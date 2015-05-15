@@ -2,14 +2,12 @@ local lgi = require "lgi"
 local Gtk = lgi.Gtk
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
-local ui = require "moonhowl.ui"
 local config = require "moonhowl.config"
 
 local main_window = object:extend()
 
 function main_window:_init(title)
     self._title = title
-    self.main_ui = ui.main_ui:new()
 
     local cw = config.window
     self.handle = Gtk.Window{
@@ -18,8 +16,6 @@ function main_window:_init(title)
         default_height = cw.height,
         on_destroy = Gtk.main_quit,
         on_configure_event = self.handle__on_configure,
-
-        self.main_ui.handle,
     }
 
     signal.listen("ui_set_current_tab", self.signal_set_current_tab, self)
@@ -29,6 +25,15 @@ function main_window:_init(title)
     end
 
     self.handle:show_all()
+end
+
+function main_window:set_child(obj)
+    if self.child then
+        local child_w = self.handle:get_child()
+        self.handle:remove(child_w)
+    end
+    self.child = obj
+    self.handle:add(obj.handle)
 end
 
 function main_window.handle__on_configure(w, ev)

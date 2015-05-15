@@ -11,12 +11,18 @@ local app = {}
 function app:main()
     config._load()
     self.cb_handler = cb_handler:new(http.service:new())
-    self.account = account:new(self.cb_handler)
-    self.account:login("dev") --TODO: account gui
     self.window = ui.main_window:new(version.app_name)
-    signal.emit "ui_refresh_all"
+    self.window:set_child(ui.account_ui:new())
+    signal.listen("ui_login", self.login, self)
     ui.main_loop()
     config._save()
+end
+
+function app:login(acc_name)
+    self.account = account:new(self.cb_handler)
+    self.account:login(acc_name)
+    self.window:set_child(ui.main_ui:new())
+    signal.emit "ui_refresh_all"
 end
 
 return app
