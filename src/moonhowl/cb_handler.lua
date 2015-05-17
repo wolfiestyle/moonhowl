@@ -33,7 +33,7 @@ function cb_handler:add(fut, cb)
     local n = #self
     self[n + 1] = { fut, cb }
     if n == 0 then
-        ui.timer.add(self._update, 200)
+        return ui.timer.add(200, self._update)
     end
 end
 
