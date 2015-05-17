@@ -1,5 +1,5 @@
-local table_remove, tostring, unpack =
-      table.remove, tostring, unpack
+local table_remove, tostring, type, unpack =
+      table.remove, tostring, type, unpack
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
@@ -19,10 +19,11 @@ function cb_handler:update()
         local ready, res, err = fut:peek(true)
         if ready then
             table_remove(self, i)
-            if res == nil then
-                self.on_error(err)
+            local is_table = type(callback) == "table"
+            if res ~= nil then
+                (is_table and callback.ok or callback)(res, err)
             else
-                callback(res, err)
+                (is_table and callback.error or self.on_error)(err)
             end
         end
     end
@@ -38,7 +39,7 @@ function cb_handler:add(fut, cb)
 end
 
 function cb_handler.on_error(err)
-    signal.emit("ui_message", tostring(err), true)
+    return signal.emit("ui_message", tostring(err), true)
 end
 
 return cb_handler
