@@ -1,5 +1,5 @@
-local table_remove, tostring, type, unpack =
-      table.remove, tostring, type, unpack
+local io_stderr, table_remove, tostring, type, unpack =
+      io.stderr, table.remove, tostring, type, unpack
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
@@ -39,7 +39,9 @@ function cb_handler:add(fut, cb)
 end
 
 function cb_handler.on_error(err)
-    return signal.emit("ui_message", tostring(err), true)
+    err = tostring(err)
+    io_stderr:write("cb_handler: ", err, "\n")
+    return signal.emit("ui_message", err, true)
 end
 
 return cb_handler
