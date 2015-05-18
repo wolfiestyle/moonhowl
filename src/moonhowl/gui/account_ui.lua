@@ -10,6 +10,7 @@ local account_ui = object:extend()
 
 function account_ui:_init(cbh)
     self.state = 0
+    self.acc_rows = {}
     self.client = twitter.api.new(config.app_keys, cbh.http)
     self.client:set_callback_handler(cbh)
     self._next = self:bind(self.next_login_step)
@@ -125,26 +126,28 @@ function account_ui:_init(cbh)
     self.handle:show_all()
 end
 
-local function build_acc_row(id, name)
-    local row = Gtk.Box{
-        id = id,
-        spacing = 5,
-        Gtk.Image{ icon_name = "avatar-default", icon_size = Gtk.IconSize.DIALOG },
-        Gtk.Label{ label = name },
+function account_ui:build_acc_row(id, name)
+    local row = Gtk.ListBoxRow{
+        Gtk.Box{
+            id = id,
+            spacing = 5,
+            Gtk.Image{ icon_name = "avatar-default", icon_size = Gtk.IconSize.DIALOG },
+            Gtk.Label{ label = name },
+        }
     }
     row:show_all()
+    self.acc_rows[id] = row
     return row
 end
 
 function account_ui:init_accounts()
     for id, acc in pairs(config.accounts) do
-        self.acc_list:add(build_acc_row(id, acc.screen_name))
+        self.acc_list:add(self:build_acc_row(id, acc.screen_name))
     end
 end
 
 function account_ui:add_account(keys)
     local id, name = keys.user_id, keys.screen_name
-    --TODO: check duplicate
     config.accounts[id] = {
         user_id = id,
         screen_name = name,
@@ -154,7 +157,11 @@ function account_ui:add_account(keys)
         },
     }
     config._save()
-    self.acc_list:add(build_acc_row(id, name))
+    local old = self.acc_rows[id]
+    if old then
+        self.acc_list:remove(old)
+    end
+    self.acc_list:add(self:build_acc_row(id, name))
 end
 
 function account_ui.acc_list__row_activated(w, row)
