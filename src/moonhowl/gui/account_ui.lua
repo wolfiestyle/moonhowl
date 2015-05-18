@@ -33,14 +33,6 @@ function account_ui:_init(cbh)
                     xalign = 0,
                     margin_bottom = 5,
                 },
-                Gtk.Label{
-                    id = "lbl_no_acc",
-                    label = "<small>No accounts configured.\nClick the button below to setup one.</small>",
-                    use_markup = true,
-                    margin = 20,
-                    justify = Gtk.Justification.CENTER,
-                    no_show_all = true,
-                },
                 Gtk.ListBox{
                     id = "acc_list",
                     selection_mode = "NONE",
@@ -111,7 +103,6 @@ function account_ui:_init(cbh)
     self.rev_acc_list = c.rev_acc_list
     self.rev_new_acc = c.rev_new_acc
     self.cmd_new_acc = c.cmd_new_acc
-    self.lbl_no_acc = c.lbl_no_acc
     self.stk_login = c.stk_login
     self.spn1, self.spn2, self.spn3 = c.spn1, c.spn2, c.spn3
     self.cmd_retry1 = c.cmd_retry1
@@ -119,6 +110,16 @@ function account_ui:_init(cbh)
     self.cmd_auth_url = c.cmd_auth_url
     self.pin = c.pin
     self.cmd_confirm = c.cmd_confirm
+
+    local lbl_no_acc = Gtk.Label{
+        label = "<small>No accounts configured.\nClick the button below to setup one.</small>",
+        use_markup = true,
+        margin = 20,
+        justify = Gtk.Justification.CENTER,
+        no_show_all = true,
+    }
+    lbl_no_acc:show()
+    self.acc_list:set_placeholder(lbl_no_acc)
 
     self:init_accounts()
     self.handle:show_all()
@@ -136,12 +137,8 @@ local function build_acc_row(id, name)
 end
 
 function account_ui:init_accounts()
-    if next(config.accounts) then
-        for id, acc in pairs(config.accounts) do
-            self.acc_list:add(build_acc_row(id, acc.screen_name))
-        end
-    else
-        self.lbl_no_acc:show()
+    for id, acc in pairs(config.accounts) do
+        self.acc_list:add(build_acc_row(id, acc.screen_name))
     end
 end
 
@@ -158,7 +155,6 @@ function account_ui:add_account(keys)
     }
     config._save()
     self.acc_list:add(build_acc_row(id, name))
-    self.lbl_no_acc:hide()
 end
 
 function account_ui.acc_list__row_activated(w, row)
