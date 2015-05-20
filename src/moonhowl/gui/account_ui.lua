@@ -127,12 +127,22 @@ function account_ui:_init(cbh)
 end
 
 function account_ui:build_acc_row(id, name)
+    local menu = Gtk.Menu{
+        Gtk.MenuItem{ label = name, sensitive = false },
+        Gtk.SeparatorMenuItem(),
+        Gtk.MenuItem{ id = "delete", label = "Delete", on_activate = self:bind_1(self.remove_account, id) },
+    }
+    menu:show_all()
     local row = Gtk.ListBoxRow{
-        Gtk.Box{
-            id = id,
-            spacing = 5,
-            Gtk.Image{ icon_name = "avatar-default", icon_size = Gtk.IconSize.DIALOG },
-            Gtk.Label{ label = name },
+        id = id,
+        Gtk.EventBox{
+            visible_window = false,
+            on_button_press_event = self.bind(menu, self.acc_list__on_button_press),  -- ugly
+            Gtk.Box{
+                spacing = 5,
+                Gtk.Image{ icon_name = "avatar-default", icon_size = Gtk.IconSize.DIALOG },
+                Gtk.Label{ label = name },
+            }
         }
     }
     row:show_all()
@@ -164,8 +174,20 @@ function account_ui:add_account(keys)
     self.acc_list:add(self:build_acc_row(id, name))
 end
 
+function account_ui:remove_account(id)
+    self.acc_list:remove(self.acc_rows[id])
+    config.accounts[id] = nil
+    config._save()
+end
+
 function account_ui.acc_list__row_activated(w, row)
-    return signal.emit("ui_login", row:get_child().id)
+    return signal.emit("ui_login", row.id)
+end
+
+function account_ui.acc_list__on_button_press(menu, w, event)
+    if event:triggers_context_menu() then
+        return menu:popup(nil, nil, nil, nil, event.button, event.time)
+    end
 end
 
 function account_ui:new_acc__on_toggled(w)
