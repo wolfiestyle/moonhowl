@@ -176,6 +176,7 @@ end
 
 function account_ui:remove_account(id)
     self.acc_list:remove(self.acc_rows[id])
+    self.acc_rows[id] = nil
     config.accounts[id] = nil
     config._save()
 end
