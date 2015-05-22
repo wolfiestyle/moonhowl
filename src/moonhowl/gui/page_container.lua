@@ -36,7 +36,7 @@ local type_to_view = {
     user_cursor = "user_cursor_view",
 }
 
-function page_container:set_content(label, content)
+function page_container:set_content(content, label)
     print("~set_content", label, content)
     self.label:set_text(label)  -- field added by tabbed_view:add
     local view_name = type_to_view[content._type]

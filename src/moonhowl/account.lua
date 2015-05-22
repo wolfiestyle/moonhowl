@@ -57,7 +57,7 @@ function account:api_call(ctx, method, args)
         return _error "Can't call stream methods"
     end
     function args._callback(obj)
-        ctx:set_content(obj._type, obj)
+        ctx:set_content(obj, obj._type)
     end
     fn(self.client, args)
 end
@@ -66,7 +66,7 @@ function account:open_profile(ctx, name)
     self.client:get_user{
         screen_name = name,
         _callback = function(user)
-            ctx:set_content("@" .. user.screen_name, user)
+            ctx:set_content(user, "@" .. user.screen_name)
         end,
     }
 end
@@ -75,7 +75,7 @@ function account:open_profile_id(ctx, id)
     self.client:get_user{
         user_id = id,
         _callback = function(user)
-            ctx:set_content("@" .. user.screen_name, user)
+            ctx:set_content(user, "@" .. user.screen_name)
         end,
     }
 end
@@ -84,7 +84,7 @@ function account:show_tweet(ctx, id)
     self.client:get_tweet{
         id = id,
         _callback = function(tweet)
-            ctx:set_content("tweet", tweet)
+            ctx:set_content(tweet, "tweet")
         end,
     }
 end
@@ -102,7 +102,7 @@ function account:search(ctx, str)
     self.client:search_tweets{
         q = str,
         _callback = function(res)
-            ctx:set_content("search", res)
+            ctx:set_content(res, "search")
         end,
     }
 end
@@ -111,7 +111,7 @@ function account:search_users(ctx, str)
     self.client:search_users{
         q = str,
         _callback = function(res)
-            ctx:set_content("search", res)
+            ctx:set_content(res, "search")
         end,
     }
 end
@@ -131,7 +131,7 @@ end
 function account:timeline(ctx, name, id_or_owner, slug)
     local params = {
         _callback = function(tl)
-            ctx:set_content(name, tl)
+            ctx:set_content(tl, name)
         end,
     }
     if name == "home" then
@@ -150,7 +150,7 @@ end
 function account:show_list(ctx, id_or_owner, slug)
     local params = {
         _callback = function(tl)
-            ctx:set_content("list", tl)
+            ctx:set_content(tl, "list")
         end,
     }
     if process_list_args(params, id_or_owner, slug) then
