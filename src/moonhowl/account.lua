@@ -56,64 +56,58 @@ function account:api_call(ctx, method, args)
     if fn.stream then
         return _error "Can't call stream methods"
     end
-    function args._callback(obj)
-        ctx:set_content(obj, obj._type)
+    args._callback = function(obj)
+        return ctx:set_content(obj, obj._type)
     end
     fn(self.client, args)
 end
 
-function account:open_profile(ctx, name)
-    self.client:get_user{
-        screen_name = name,
-        _callback = function(user)
-            ctx:set_content(user, "@" .. user.screen_name)
-        end,
-    }
+function account:open_profile(ctx, name, args)
+    args.screen_name = name
+    args._callback = function(user)
+        return ctx:set_content(user, "@" .. user.screen_name)
+    end
+    self.client:get_user(args)
 end
 
-function account:open_profile_id(ctx, id)
-    self.client:get_user{
-        user_id = id,
-        _callback = function(user)
-            ctx:set_content(user, "@" .. user.screen_name)
-        end,
-    }
+function account:open_profile_id(ctx, id, args)
+    args.user_id = id
+    args._callback = function(user)
+        return ctx:set_content(user, "@" .. user.screen_name)
+    end
+    self.client:get_user(args)
 end
 
-function account:show_tweet(ctx, id)
-    self.client:get_tweet{
-        id = id,
-        _callback = function(tweet)
-            ctx:set_content(tweet, "tweet")
-        end,
-    }
+function account:show_tweet(ctx, id, args)
+    args.id = id
+    args._callback = function(tweet)
+        return ctx:set_content(tweet, "tweet")
+    end
+    self.client:get_tweet(args)
 end
 
-function account:tweet(ctx, text)
-    self.client:tweet{
-        status = text,
-        _callback = function(tweet)
-            signal.emit("ui_tweet_sent", tweet) --FIXME: mandar a home stream
-        end,
-    }
+function account:tweet(ctx, text, args)
+    args.status = text
+    args._callback = function(tweet)
+        return signal.emit("ui_tweet_sent", tweet) --FIXME: mandar a home stream
+    end
+    self.client:tweet(args)
 end
 
-function account:search(ctx, str)
-    self.client:search_tweets{
-        q = str,
-        _callback = function(res)
-            ctx:set_content(res, "search")
-        end,
-    }
+function account:search(ctx, str, args)
+    args.q = str
+    args._callback = function(res)
+        return ctx:set_content(res, "search")
+    end
+    self.client:search_tweets(args)
 end
 
-function account:search_users(ctx, str)
-    self.client:search_users{
-        q = str,
-        _callback = function(res)
-            ctx:set_content(res, "search")
-        end,
-    }
+function account:search_users(ctx, str, args)
+    args.q = str
+    args._callback = function(res)
+        return ctx:set_content(res, "search")
+    end
+    self.client:search_users(args)
 end
 
 local function process_list_args(params, id_or_owner, slug)
@@ -128,12 +122,10 @@ local function process_list_args(params, id_or_owner, slug)
     return true
 end
 
-function account:timeline(ctx, name, id_or_owner, slug)
-    local params = {
-        _callback = function(tl)
-            ctx:set_content(tl, name)
-        end,
-    }
+function account:timeline(ctx, name, id_or_owner, slug, params)
+    params._callback = function(tl)
+        return ctx:set_content(tl, name)
+    end
     if name == "home" then
         self.client:get_home_timeline(params)
     elseif name == "mentions" then
@@ -147,12 +139,10 @@ function account:timeline(ctx, name, id_or_owner, slug)
     end
 end
 
-function account:show_list(ctx, id_or_owner, slug)
-    local params = {
-        _callback = function(tl)
-            ctx:set_content(tl, "list")
-        end,
-    }
+function account:show_list(ctx, id_or_owner, slug, params)
+    params._callback = function(tl)
+        return ctx:set_content(tl, "list")
+    end
     if process_list_args(params, id_or_owner, slug) then
         self.client:get_list_members(params)
     end

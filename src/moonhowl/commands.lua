@@ -1,30 +1,30 @@
 local signal = require "moonhowl.signal"
 
 local function location_api(ctx, path, args)
-    signal.emit("a_api_call", ctx, path[1], args or {})
+    return signal.emit("a_api_call", ctx, path[1], args)
 end
 
-local function location_user(ctx, path)
+local function location_user(ctx, path, args)
     local n = #path
     if n == 1 and path[2] == nil then
-        signal.emit("a_open_profile", ctx, path[1])
+        return signal.emit("a_open_profile", ctx, path[1], args)
     elseif n == 2 and path[1] == "id" then
-        signal.emit("a_open_profile_id", ctx, path[2])
+        return signal.emit("a_open_profile_id", ctx, path[2], args)
     else
-        signal.emit("ui_message", "<screen_name> or id/<user_id> required", true)
+        return signal.emit("ui_message", "<screen_name> or id/<user_id> required", true)
     end
 end
 
-local function location_tweet(ctx, path)
-    signal.emit("a_show_tweet", ctx, path[1])
+local function location_tweet(ctx, path, args)
+    return signal.emit("a_show_tweet", ctx, path[1], args)
 end
 
-local function location_timeline(ctx, path)
-    signal.emit("a_timeline", ctx, path[1], path[2], path[3])
+local function location_timeline(ctx, path, args)
+    return signal.emit("a_timeline", ctx, path[1], path[2], path[3], args)
 end
 
-local function location_list(ctx, path)
-    signal.emit("a_show_list", ctx, path[1], path[2])
+local function location_list(ctx, path, args)
+    return signal.emit("a_show_list", ctx, path[1], path[2], args)
 end
 
 local function debug_funcs(ctx, path)

@@ -72,7 +72,7 @@ function location:_parse_command(name, args)
 
     self.uri = name .. ":" .. args
     self.path = path
-    self.query = query
+    self.query = query or {}
     self.action = cmd.action
     self.__call = self.run
 end
