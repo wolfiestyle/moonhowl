@@ -211,7 +211,7 @@ function account_ui:next_login_step()
         oc.oauth_token_secret = nil
         self.client:oauth_request_token{
             _callback = {
-                ok = function(res)
+                ok = function()
                     self.state = 1
                     return self:next_login_step()
                 end,

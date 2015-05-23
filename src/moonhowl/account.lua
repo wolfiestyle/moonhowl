@@ -87,6 +87,7 @@ function account:show_tweet(ctx, id, args)
 end
 
 function account:tweet(ctx, text, args)
+    args = args or {}
     args.status = text
     args._callback = function(tweet)
         return signal.emit("ui_tweet_sent", tweet) --FIXME: mandar a home stream

@@ -56,7 +56,7 @@ function nav_bar:addr_bar__on_activate(widget)
     signal.emit("ui_refresh")
 end
 
-function nav_bar:addr_bar__on_change(widget)
+function nav_bar:addr_bar__on_change()
     self.uri_changed = true
 end
 

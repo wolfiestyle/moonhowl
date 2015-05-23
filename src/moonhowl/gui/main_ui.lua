@@ -39,7 +39,7 @@ function main_ui:signal_compose()
     self.revealer:set_reveal_child(true)
 end
 
-function main_ui:signal_tweet_sent(tweet)
+function main_ui:signal_tweet_sent()
     self.revealer:set_reveal_child(false)
     self.infobar:show "Tweet sent!"
 end
