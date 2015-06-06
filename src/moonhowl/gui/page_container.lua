@@ -34,6 +34,8 @@ local type_to_view = {
     user = "profile_view",
     user_list = "user_list_view",
     user_cursor = "user_cursor_view",
+    dm = "dm_view",
+    dm_list = "dm_list_view",
 }
 
 function page_container:set_content(content, label)
