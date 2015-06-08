@@ -5,6 +5,7 @@ local tweet_list_view = list_view:extend()
 
 function tweet_list_view:_init(content)
     list_view._init(self)
+    self.handle:set_sort_func(self:bind(self.sort_func_id))
     self:add_list(content)
 end
 

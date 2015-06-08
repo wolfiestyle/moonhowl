@@ -34,6 +34,7 @@ function dm_view:_init(dm)
 end
 
 function dm_view:set_content(dm)
+    self.content = dm
     local user = dm.sender
     self.header:set_label(('<b>%s</b> <span color="gray">%s</span>'):format(user.screen_name, user.name))
     self.text:set_label(dm.text)

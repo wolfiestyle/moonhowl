@@ -93,6 +93,7 @@ function tweet_view:_init(tweet)
 end
 
 function tweet_view:set_content(tweet)
+    self.content = tweet
     local header, text, footer = parse_tweet(tweet)
     self.header:set_label(header)
     self.text:set_label(text)
