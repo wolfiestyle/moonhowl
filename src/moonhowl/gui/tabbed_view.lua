@@ -115,17 +115,12 @@ function tabbed_view:signal_set_location(loc)
 end
 
 function tabbed_view:signal_refresh()
-    local page = self:get_current_page()
-    if page.location then
-        page:location()
-    end
+    return self:get_current_page():refresh()
 end
 
 function tabbed_view:signal_refresh_all()
     for _, page in pairs(self.child) do
-        if page.location then
-            page:location()
-        end
+        page:refresh()
     end
 end
 

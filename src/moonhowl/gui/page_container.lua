@@ -47,6 +47,17 @@ function page_container:set_content(content, label)
     end
     local view = ui[view_name]:new(content)
     self:set_child(view)
+    self.loaded = true
+end
+
+function page_container:refresh()
+    if self.location then
+        if self.loaded and self.child.refresh then
+            self.child:refresh()
+        else
+            self:location()
+        end
+    end
 end
 
 return page_container
