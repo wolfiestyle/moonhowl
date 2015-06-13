@@ -36,7 +36,7 @@ function main_window:set_child(obj)
     self.handle:add(obj.handle)
 end
 
-function main_window.handle__on_configure(w, ev)
+function main_window.handle__on_configure(_, ev)
     local cw = config.window
     cw.x, cw.y = ev.x, ev.y
     cw.width, cw.height = ev.width, ev.height

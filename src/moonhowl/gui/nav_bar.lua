@@ -60,7 +60,7 @@ function nav_bar:addr_bar__on_change()
     self.uri_changed = true
 end
 
-function nav_bar:addr_bar__on_key_press_event(w, ev)
+function nav_bar:addr_bar__on_key_press_event(_, ev)
     if ev.keyval == 0xff1b then  -- esc
         local page = self.current_tab
         if page then

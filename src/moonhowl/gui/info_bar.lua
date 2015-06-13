@@ -31,7 +31,7 @@ function info_bar:show(msg, is_error)
 end
 
 -- handle the builtin close button
-function info_bar:handle__on_response(w, resp_id)
+function info_bar:handle__on_response(_, resp_id)
     if resp_id == Gtk.ResponseType.CLOSE then
         return self._hide()
     end

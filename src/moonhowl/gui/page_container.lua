@@ -8,9 +8,7 @@ local page_container = object:extend()
 function page_container:_init()
     self.handle = Gtk.ScrolledWindow{
         id = "page_container",
-        --TODO: poner un bg aca
     }
-
     self.handle:show_all()
 end
 
@@ -39,7 +37,7 @@ local type_to_view = {
 }
 
 function page_container:set_content(content, label)
-    print("~set_content", label, content)
+    print("~set_content", label, content._type, content._source)
     self.label:set_text(label)  -- field added by tabbed_view:add
     local view_name = type_to_view[content._type]
     if not view_name then

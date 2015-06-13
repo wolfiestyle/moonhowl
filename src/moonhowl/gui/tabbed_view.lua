@@ -80,7 +80,7 @@ function tabbed_view:init_tabs()
     end
 end
 
-function tabbed_view:handle__on_switch_page(w, page_w, id)
+function tabbed_view:handle__on_switch_page(_, page_w, id)
     local obj = self.child[page_w]
     config.tabs.current = id
     signal.emit("ui_set_current_tab", obj)

@@ -24,7 +24,7 @@ function tab_label:set_text(str)
     self.label:set_text(str)
 end
 
-function tab_label:handle__on_button_press(w, event)
+function tab_label:handle__on_button_press(_, event)
     if event.button == 2 then
         signal.emit("ui_close_tab", self.tab)
     end

@@ -181,11 +181,11 @@ function account_ui:remove_account(id)
     config._save()
 end
 
-function account_ui.acc_list__row_activated(w, row)
+function account_ui.acc_list__row_activated(_, row)
     return signal.emit("ui_login", row.id)
 end
 
-function account_ui.acc_list__on_button_press(menu, w, event)
+function account_ui.acc_list__on_button_press(menu, _, event)
     if event:triggers_context_menu() then
         return menu:popup(nil, nil, nil, nil, event.button, event.time)
     end
