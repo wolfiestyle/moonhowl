@@ -18,7 +18,9 @@ end
 function list_view:add(obj)
     local row = Gtk.ListBoxRow{ obj.handle, activatable = false, margin = 5 }
     row:show()
-    self.row_ids[row] = obj.content.id_str  --FIXME: won't work with mixed object types
+    if obj.content then
+        self.row_ids[row] = obj.content.id_str  --FIXME: won't work with mixed object types
+    end
     self.list:add(row)
 end
 
