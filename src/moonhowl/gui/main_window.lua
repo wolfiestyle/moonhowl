@@ -18,7 +18,7 @@ function main_window:_init(title)
         on_configure_event = self.handle__on_configure,
     }
 
-    signal.listen("ui_set_current_tab", self.signal_set_current_tab, self)
+    signal.listen("ui_set_current_uri", self.signal_set_current_uri, self)
 
     if cw.x and cw.y then
         self.handle:move(cw.x, cw.y)
@@ -42,8 +42,8 @@ function main_window.handle__on_configure(_, ev)
     cw.width, cw.height = ev.width, ev.height
 end
 
-function main_window:signal_set_current_tab(page)
-    local uri, title = page and page.location and page.location.uri
+function main_window:signal_set_current_uri(uri)
+    local title
     if uri ~= nil and uri ~= "" then
         title = uri .. " - " .. self._title
     else

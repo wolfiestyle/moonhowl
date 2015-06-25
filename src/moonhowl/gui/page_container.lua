@@ -6,19 +6,30 @@ local ui = require "moonhowl.ui"
 local page_container = object:extend()
 
 function page_container:_init()
-    self.handle = Gtk.ScrolledWindow{
+    self.navbar = ui.nav_bar:new(self)
+    self.handle = Gtk.Box{
         id = "page_container",
+        orientation = Gtk.Orientation.VERTICAL,
+        spacing = 3,
+
+        self.navbar.handle,
+        Gtk.ScrolledWindow{
+            id = "scroll_win",
+            vexpand = true,
+        },
     }
+    self.container = self.handle.child.scroll_win
+
     self.handle:show_all()
 end
 
 function page_container:set_child(obj)
     if self.child then
-        local child_w = self.handle:get_child() -- actual child can be a Gtk.Viewport
-        self.handle:remove(child_w)
+        local child_w = self.container:get_child() -- actual child can be a Gtk.Viewport
+        self.container:remove(child_w)
     end
     self.child = obj
-    self.handle:add(obj.handle)
+    self.container:add(obj.handle)
 end
 
 function page_container:add(item)
@@ -46,6 +57,12 @@ function page_container:set_content(content, label)
     local view = ui[view_name]:new(content)
     self:set_child(view)
     self.loaded = true
+end
+
+function page_container:set_location(loc)
+    self.location = loc
+    self.loaded = false
+    self.navbar:set_location(loc.uri)
 end
 
 function page_container:refresh()

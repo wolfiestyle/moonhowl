@@ -7,7 +7,6 @@ local ui = require "moonhowl.ui"
 local main_ui = object:extend()
 
 function main_ui:_init()
-    self.navbar = ui.nav_bar:new()
     self.tabs = ui.tabbed_view:new()
     self.infobar = ui.info_bar:new()
     self.tweet_entry = ui.tweet_entry:new()
@@ -17,7 +16,6 @@ function main_ui:_init()
         orientation = Gtk.Orientation.VERTICAL,
         spacing = 3,
 
-        self.navbar.handle,
         self.tabs.handle,
         self.infobar.handle,
         Gtk.Revealer{

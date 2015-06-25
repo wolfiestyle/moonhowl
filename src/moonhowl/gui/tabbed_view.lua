@@ -13,27 +13,26 @@ function tabbed_view:_init()
         id = "tabbed_view",
         scrollable = true,
         vexpand = true,
-        on_switch_page = self:bind(self.handle__on_switch_page),
     }
 
     local cmd_new_tab = Gtk.ToolButton{
         icon_name = "list-add",
-        on_clicked = signal.bind_emit("ui_new_tab"),
+        on_clicked = self:bind(self.cmd_new_tab__clicked),
     }
     cmd_new_tab:show()
     self.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
 
-    signal.listen("ui_new_tab", self.signal_new_tab, self)
     signal.listen("ui_close_tab", self.signal_close_tab, self)
-    signal.listen("ui_set_location", self.signal_set_location, self)
-    signal.listen("ui_refresh", self.signal_refresh, self)
+    signal.listen("ui_update_tab", self.signal_update_tab, self)
     signal.listen("ui_refresh_all", self.signal_refresh_all, self)
 
     self.child = {}
 
     self:init_tabs()
+    self.handle.on_switch_page = self:bind(self.handle__on_switch_page)
+
     if self.handle:get_n_pages() == 0 then
-        self:signal_new_tab()
+        self:new_tab(false)
     end
 end
 
@@ -43,82 +42,60 @@ function tabbed_view:add(obj, label_str)
     self.child[obj.handle] = obj
     local id = self.handle:append_page(obj.handle, label.handle)
     self.handle:set_current_page(id)
-    config.tabs[id + 1] = false
-    return id
+    return obj, id
 end
 
 function tabbed_view:remove(widget)
     local id = self.handle:page_num(widget)
     self.handle:remove_page(id)
-    table.remove(config.tabs, id + 1)
-    local obj = self.child[widget]
+    --local obj = self.child[widget]
     self.child[widget] = nil
-    return obj
+    return id
 end
 
-function tabbed_view:get_current_page()
-    local id = self.handle:get_current_page()
-    local page = self.handle:get_nth_page(id)
-    return self.child[page], id
+function tabbed_view:new_tab()
+    return self:add(ui.page_container:new())
 end
 
 function tabbed_view:init_tabs()
-    local cur = config.tabs.current
     for _, uri in ipairs(config.tabs) do
-        self:signal_new_tab()
+        local page = self:new_tab()
         if uri then
             local loc, err = location:new(uri)
             if loc ~= nil then
-                self:signal_set_location(loc)
+                page:set_location(loc)
             else
                 io.stderr:write("invalid uri '", uri, "': ", err, "\n")
             end
         end
     end
+    local cur = config.tabs.current
     if cur then
         self.handle:set_current_page(cur)
     end
 end
 
-function tabbed_view:handle__on_switch_page(_, page_w, id)
+function tabbed_view:handle__on_switch_page(_, page_w)
     local obj = self.child[page_w]
-    config.tabs.current = id
-    signal.emit("ui_set_current_tab", obj)
+    return signal.emit("ui_set_current_uri", obj.location and obj.location.uri)
 end
 
-function tabbed_view:signal_new_tab()
-    local page = ui.page_container:new()
-    local id = self:add(page)
-    return page, id
+function tabbed_view:cmd_new_tab__clicked()
+    local _, id = self:new_tab()
+    config.tabs[id + 1] = false
 end
 
 function tabbed_view:signal_close_tab(tab)
-    self:remove(tab.handle)
+    local id = self:remove(tab.handle)
+    table.remove(config.tabs, id + 1)
     if self.handle:get_n_pages() == 0 then
-        config.tabs.current = nil
-        signal.emit("ui_set_current_tab")  -- nil
+        return signal.emit("ui_set_current_uri")  -- nil
     end
 end
 
-function tabbed_view:signal_set_location(loc)
-    print("set_location", loc.uri)
-    local page, id = self:get_current_page()
-    if page ~= nil then
-        page.temp_uri = nil
-    end
-    if page == nil or page.protected then
-        page, id = self:signal_new_tab()
-    end
-    page.location = loc
-    config.tabs[id + 1] = loc.uri
-    signal.emit("ui_set_current_tab", page)
-end
-
-function tabbed_view:signal_refresh()
-    local page = self:get_current_page()
-    if page then
-        return page:refresh()
-    end
+function tabbed_view:signal_update_tab(page, uri)
+    local id = self.handle:page_num(page.handle)
+    config.tabs[id + 1] = uri
 end
 
 function tabbed_view:signal_refresh_all()
