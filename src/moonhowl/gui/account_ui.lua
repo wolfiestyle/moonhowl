@@ -2,15 +2,15 @@ local lgi = require "lgi"
 local Gtk = lgi.Gtk
 local twitter = require "luatwit"
 local object = require "moonhowl.object"
-local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
 local config = require "moonhowl.config"
 
 local account_ui = object:extend()
 
-function account_ui:_init(cbh)
+function account_ui:_init(cbh, login_cb)
     self.state = 0
     self.acc_rows = {}
+    self.login_cb = login_cb
     self.client = twitter.api.new(config.app_keys, cbh.http)
     self.client:set_callback_handler(cbh)
     self._next = self:bind(self.next_login_step)
@@ -37,7 +37,7 @@ function account_ui:_init(cbh)
                 Gtk.ListBox{
                     id = "acc_list",
                     selection_mode = "NONE",
-                    on_row_activated = self.acc_list__row_activated,
+                    on_row_activated = self:bind(self.acc_list__row_activated),
                 },
             },
         },
@@ -181,8 +181,8 @@ function account_ui:remove_account(id)
     config._save()
 end
 
-function account_ui.acc_list__row_activated(_, row)
-    return signal.emit("ui_login", row.id)
+function account_ui:acc_list__row_activated(_, row)
+    return self.login_cb(row.id)
 end
 
 function account_ui.acc_list__on_button_press(menu, _, event)

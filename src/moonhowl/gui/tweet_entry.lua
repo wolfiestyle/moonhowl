@@ -19,23 +19,20 @@ function tweet_entry:_init()
     self.txt_entry = child.txt_entry
     self.cmd_tweet = child.cmd_tweet
 
-    self.txt_entry.on_activate = self.txt_entry__on_activate
+    self.txt_entry.on_activate = self:bind(self.txt_entry__on_activate)
     self.cmd_tweet.on_clicked = self:bind(self.cmd_tweet__on_clicked)
-
-    signal.listen("ui_tweet_sent", self.signal_tweet_sent, self)
 end
 
-function tweet_entry.txt_entry__on_activate(widget)
+function tweet_entry:txt_entry__on_activate(widget)
     local text = widget:get_text()
-    signal.emit("a_tweet", nil, text) --FIXME: ctx = current account
+    signal.emit("a_tweet", text, function(tweet)
+        self.txt_entry:set_text ""
+        return signal.emit("ui_tweet_sent", tweet)
+    end)
 end
 
 function tweet_entry:cmd_tweet__on_clicked()
     self.txt_entry:activate()
-end
-
-function tweet_entry:signal_tweet_sent()
-    self.txt_entry:set_text ""
 end
 
 return tweet_entry

@@ -22,9 +22,7 @@ function tabbed_view:_init()
     cmd_new_tab:show()
     self.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
 
-    signal.listen("ui_close_tab", self.signal_close_tab, self)
     signal.listen("ui_update_tab", self.signal_update_tab, self)
-    signal.listen("ui_refresh_all", self.signal_refresh_all, self)
 
     self.child = {}
 
@@ -37,7 +35,7 @@ function tabbed_view:_init()
 end
 
 function tabbed_view:add(obj, label_str)
-    local label = ui.tab_label:new(obj, label_str)
+    local label = ui.tab_label:new(label_str, self:bind_1(self.close_tab, obj))
     obj.label = label
     self.child[obj.handle] = obj
     local id = self.handle:append_page(obj.handle, label.handle)
@@ -85,7 +83,7 @@ function tabbed_view:cmd_new_tab__clicked()
     config.tabs[id + 1] = false
 end
 
-function tabbed_view:signal_close_tab(tab)
+function tabbed_view:close_tab(tab)
     local id = self:remove(tab.handle)
     table.remove(config.tabs, id + 1)
     if self.handle:get_n_pages() == 0 then
@@ -98,7 +96,7 @@ function tabbed_view:signal_update_tab(page, uri)
     config.tabs[id + 1] = uri
 end
 
-function tabbed_view:signal_refresh_all()
+function tabbed_view:refresh_all()
     for _, page in pairs(self.child) do
         page:refresh()
     end
