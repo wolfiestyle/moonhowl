@@ -33,21 +33,21 @@ local function dispatch(url, data)
     for _, obj in ipairs(requests[url]) do
         obj:set_image(data)
     end
+    requests[url] = nil
 end
 
 function img_store.new_request(url, obj)
     cache[url] = false
     requests[url] = { obj }
+    local cb = function(data, code)
+        return dispatch(url, code == 200 and data)
+    end
     return {
         url = url,
-        _callback = function(data, code)
-            if code == 200 then
-                dispatch(url, data)
-            else
-                dispatch(url)
-            end
-            requests[url] = nil
-        end,
+        _callback = {
+            ok = cb,
+            error = cb,
+        },
     }
 end
 
