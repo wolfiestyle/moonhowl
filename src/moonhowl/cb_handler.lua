@@ -16,14 +16,14 @@ function cb_handler:update()
     self.http:update()
     for i = #self, 1, -1 do
         local fut, callback = unpack(self[i])
-        local ready, res, err = fut:peek(true)
+        local ready, res, code_or_err = fut:peek(true)
         if ready then
             table_remove(self, i)
             local is_table = type(callback) == "table"
             if res ~= nil then
-                (is_table and callback.ok or callback)(res, err)
+                (is_table and callback.ok or callback)(res, code_or_err)
             else
-                (is_table and callback.error or self.on_error)(err)
+                (is_table and callback.error or self.on_error)(code_or_err)
             end
         end
     end
