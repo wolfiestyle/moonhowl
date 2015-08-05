@@ -59,7 +59,7 @@ function account:api_call(ctx, method, args)
     args._callback = function(obj)
         return ctx:set_content(obj, obj._type)
     end
-    fn(self.client, args)
+    return fn(self.client, args)
 end
 
 function account:open_profile(ctx, name, args)
@@ -67,7 +67,7 @@ function account:open_profile(ctx, name, args)
     args._callback = function(user)
         return ctx:set_content(user, "@" .. user.screen_name)
     end
-    self.client:get_user(args)
+    return self.client:get_user(args)
 end
 
 function account:open_profile_id(ctx, id, args)
@@ -75,7 +75,7 @@ function account:open_profile_id(ctx, id, args)
     args._callback = function(user)
         return ctx:set_content(user, "@" .. user.screen_name)
     end
-    self.client:get_user(args)
+    return self.client:get_user(args)
 end
 
 function account:show_tweet(ctx, id, args)
@@ -83,14 +83,14 @@ function account:show_tweet(ctx, id, args)
     args._callback = function(tweet)
         return ctx:set_content(tweet, "tweet")
     end
-    self.client:get_tweet(args)
+    return self.client:get_tweet(args)
 end
 
 function account:tweet(text, cb, args)
     args = args or {}
     args.status = text
     args._callback = cb
-    self.client:tweet(args)
+    return self.client:tweet(args)
 end
 
 function account:search(ctx, str, args)
@@ -98,7 +98,7 @@ function account:search(ctx, str, args)
     args._callback = function(res)
         return ctx:set_content(res, "search")
     end
-    self.client:search_tweets(args)
+    return self.client:search_tweets(args)
 end
 
 function account:search_users(ctx, str, args)
@@ -106,7 +106,7 @@ function account:search_users(ctx, str, args)
     args._callback = function(res)
         return ctx:set_content(res, "search")
     end
-    self.client:search_users(args)
+    return self.client:search_users(args)
 end
 
 local function process_list_args(params, id_or_owner, slug)
@@ -126,12 +126,12 @@ function account:timeline(ctx, name, id_or_owner, slug, params)
         return ctx:set_content(tl, name)
     end
     if name == "home" then
-        self.client:get_home_timeline(params)
+        return self.client:get_home_timeline(params)
     elseif name == "mentions" then
-        self.client:get_mentions(params)
+        return self.client:get_mentions(params)
     elseif name == "list" then
         if process_list_args(params, id_or_owner, slug) then
-            self.client:get_list_timeline(params)
+            return self.client:get_list_timeline(params)
         end
     else
         return _error("Unknown timeline: " .. name)
@@ -143,7 +143,7 @@ function account:show_list(ctx, id_or_owner, slug, params)
         return ctx:set_content(tl, "list")
     end
     if process_list_args(params, id_or_owner, slug) then
-        self.client:get_list_members(params)
+        return self.client:get_list_members(params)
     end
 end
 
@@ -154,9 +154,9 @@ function account:request_image(ctx, url)
     end
     ctx:set_image "image-loading"
     if img == false then    -- request already sent
-        img_store.join_request(url, ctx)
+        return img_store.join_request(url, ctx)
     else
-        self.client:http_request(img_store.new_request(url, ctx))
+        return self.client:http_request(img_store.new_request(url, ctx))
     end
 end
 
