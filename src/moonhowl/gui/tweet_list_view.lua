@@ -5,7 +5,8 @@ local tweet_list_view = list_view:extend()
 
 function tweet_list_view:_init(content)
     list_view._init(self)
-    self.handle:set_sort_func(self:bind(self.sort_func_id))
+    self.__call = self.sort_func
+    self.handle:set_sort_func(self)
     self:add_list(content)
 end
 
@@ -24,6 +25,15 @@ function tweet_list_view:refresh()
             return self:add_list(list)
         end
     }
+end
+
+function tweet_list_view:sort_func(ra, rb)
+    local obja, objb = self[ra], self[rb]
+    if obja._type == "tweet" and objb._type == "tweet" then
+        return objb - obja    -- sort by tweet id
+    else
+        return objb._seq_id - obja._seq_id  -- sort by received order
+    end
 end
 
 return tweet_list_view
