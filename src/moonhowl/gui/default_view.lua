@@ -6,6 +6,7 @@ local pretty = require "pl.pretty"
 local default_view = object:extend()
 
 function default_view:_init(obj)
+    self.content = obj
     self.handle = Gtk.Label{
         id = "default_view",
         label = pretty.write(obj),

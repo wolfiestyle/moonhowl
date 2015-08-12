@@ -46,8 +46,11 @@ end
 function tabbed_view:remove(widget)
     local id = self.handle:page_num(widget)
     self.handle:remove_page(id)
-    --local obj = self.child[widget]
+    local close_cb = self.child[widget].cleanup
     self.child[widget] = nil
+    if close_cb then
+        close_cb()
+    end
     return id
 end
 

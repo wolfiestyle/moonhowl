@@ -53,13 +53,21 @@ function account:api_call(ctx, method, args)
     if fn == nil then
         return _error("Unknown method: " .. method)
     end
+    local handle
     if fn.stream then
-        return _error "Can't call stream methods"
+        ctx:set_content({ _type = "stream" }, method)
+        ctx.cleanup = function()
+            return handle:close()
+        end
+        args._callback = function(obj)
+            return ctx:append_content(obj)
+        end
+    else
+        args._callback = function(obj)
+            return ctx:set_content(obj, obj._type)
+        end
     end
-    args._callback = function(obj)
-        return ctx:set_content(obj, obj._type)
-    end
-    return fn(self.client, args)
+    handle = fn(self.client, args)
 end
 
 function account:open_profile(ctx, name, args)

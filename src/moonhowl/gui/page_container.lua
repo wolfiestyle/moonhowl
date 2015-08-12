@@ -45,18 +45,31 @@ local type_to_view = {
     user_cursor = "user_cursor_view",
     dm = "dm_view",
     dm_list = "dm_list_view",
+    stream = "tweet_list_view",
 }
 
-function page_container:set_content(content, label)
-    print("~set_content", label, content._type, content._source)
-    self.label:set_text(label)  -- field added by tabbed_view:add
+local function create_view(content)
     local view_name = type_to_view[content._type]
     if not view_name then
         view_name = "default_view"
     end
-    local view = ui[view_name]:new(content)
-    self:set_child(view)
+    return ui[view_name]:new(content)
+end
+
+function page_container:set_content(content, label)
+    print("~set_content", label, content._type, content._source)
+    if self.cleanup then
+        self.cleanup()
+        self.cleanup = nil
+    end
+    self.label:set_text(label)  -- field added by tabbed_view:add
+    self:set_child(create_view(content))
     self.loaded = true
+end
+
+function page_container:append_content(content)
+    print("~append_content", content._type)
+    return self.child:add(create_view(content))
 end
 
 function page_container:set_location(loc)
