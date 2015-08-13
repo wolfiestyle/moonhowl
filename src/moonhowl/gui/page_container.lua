@@ -68,7 +68,6 @@ function page_container:set_content(content, label)
 end
 
 function page_container:append_content(content)
-    print("~append_content", content._type)
     return self.child:add(create_view(content))
 end
 

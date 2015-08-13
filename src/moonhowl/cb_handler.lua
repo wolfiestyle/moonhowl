@@ -46,13 +46,21 @@ function cb_handler:add(obj, callback)
         end
     elseif obj._type == "stream" then
         updater = function()
-            if not obj:is_active(true) then
-                (is_table and callback.error or self.on_error)("stream closed")
+            local active, _, err = obj:is_active(true)
+            if not active then
+                io_stderr:write("cb_handler: stream closed: ", err, "\n")
+                if is_table and callback.error then
+                    callback.error(err)
+                end
                 return true
             end
             for data in obj:iter() do
-                data._seq_id = self:get_id();
-                (is_table and callback.ok or callback)(data)
+                if type(data) == "table" then
+                    data._seq_id = self:get_id();
+                    (is_table and callback.ok or callback)(data)
+                else
+                    (is_table and callback.error or self.on_error)(data)
+                end
             end
         end
     else
