@@ -55,7 +55,7 @@ function account:api_call(ctx, method, args)
     end
     local handle
     if fn.stream then
-        ctx:set_content({ _type = "stream" }, method)
+        ctx:setup_view("tweet_list_view", method)
         ctx.cleanup = function()
             return handle:close()
         end

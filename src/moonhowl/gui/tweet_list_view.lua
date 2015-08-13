@@ -7,9 +7,8 @@ function tweet_list_view:_init(content)
     list_view._init(self)
     self.__call = self.sort_func
     self.handle:set_sort_func(self)
-    self:add_list(content)
-    if content._type == "stream" then   -- hack
-        self.refresh = false
+    if content then
+        self:add_list(content)
     end
 end
 
