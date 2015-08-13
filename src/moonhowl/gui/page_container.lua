@@ -29,7 +29,7 @@ function page_container:set_child(obj)
         self.container:remove(child_w)
     end
     self.child = obj
-    self.container:add(obj.handle)
+    return self.container:add(obj.handle)
 end
 
 function page_container:add(item)
@@ -74,15 +74,15 @@ end
 function page_container:set_location(loc)
     self.location = loc
     self.loaded = false
-    self.navbar:set_location(loc.uri)
+    return self.navbar:set_location(loc.uri)
 end
 
 function page_container:refresh()
     if self.location then
         if self.loaded and self.child.refresh then
-            self.child:refresh()
+            return self.child:refresh()
         else
-            self:location()
+            return self:location()
         end
     end
 end

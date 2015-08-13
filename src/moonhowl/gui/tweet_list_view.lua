@@ -22,7 +22,7 @@ end
 
 function tweet_list_view:refresh()
     local first_tw = self.content[1]  -- get from sorted list?
-    self.content:_source_method{
+    return self.content:_source_method{
         since_id = first_tw and first_tw.id_str,
         _callback = function(list)
             return self:add_list(list)
