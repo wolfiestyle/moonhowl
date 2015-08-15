@@ -49,6 +49,17 @@ local type_to_view = {
     user_cursor = "user_cursor_view",
     dm = "dm_view",
     dm_list = "dm_list_view",
+    -- stream messages
+    tweet_deleted = "default_min_view",
+    scrub_geo = "default_min_view",
+    stream_limit = "default_min_view",
+    tweet_withheld = "default_min_view",
+    user_withheld = "default_min_view",
+    stream_disconnect = "default_min_view",
+    stream_warning = "default_min_view",
+    friend_list = "default_min_view",
+    friend_list_str = "default_min_view",
+    stream_event = "default_min_view",
 }
 
 local function create_view(content)
