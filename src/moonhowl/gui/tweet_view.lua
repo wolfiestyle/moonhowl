@@ -89,7 +89,6 @@ function tweet_view:_init(tweet)
     self.footer = child.footer
 
     self:set_content(tweet)
-    self.handle:show_all()
 end
 
 function tweet_view:set_content(tweet)

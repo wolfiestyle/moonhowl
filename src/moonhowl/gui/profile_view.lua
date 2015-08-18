@@ -13,7 +13,6 @@ function profile_view:_init(user)
         margin = 5,
         self.user_info.handle,
     }
-    self.handle:show_all()
 end
 
 return profile_view

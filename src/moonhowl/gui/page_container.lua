@@ -19,8 +19,6 @@ function page_container:_init()
         },
     }
     self.container = self.handle.child.scroll_win
-
-    self.handle:show_all()
 end
 
 function page_container:set_child(obj)
@@ -33,6 +31,7 @@ function page_container:set_child(obj)
         self.container:remove(child_w)
     end
     self.child = obj
+    obj.handle:show_all()
     return self.container:add(obj.handle)
 end
 

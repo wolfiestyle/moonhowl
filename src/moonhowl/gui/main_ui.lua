@@ -29,8 +29,6 @@ function main_ui:_init()
     signal.listen("ui_compose", self.signal_compose, self)
     signal.listen("ui_tweet_sent", self.signal_tweet_sent, self)
     signal.listen("ui_message", self.signal_message, self)
-
-    self.handle:show_all()
 end
 
 function main_ui:signal_compose()

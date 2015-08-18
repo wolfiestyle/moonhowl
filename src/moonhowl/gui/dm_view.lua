@@ -30,7 +30,6 @@ function dm_view:_init(dm)
     self.text = child.text
 
     self:set_content(dm)
-    self.handle:show_all()
 end
 
 function dm_view:set_content(dm)

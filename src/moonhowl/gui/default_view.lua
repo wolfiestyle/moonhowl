@@ -14,7 +14,6 @@ function default_view:_init(obj)
         wrap = true,
         wrap_mode = "WORD_CHAR",
     }
-    self.handle:show_all()
 end
 
 return default_view

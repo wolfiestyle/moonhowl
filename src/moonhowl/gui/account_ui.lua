@@ -123,7 +123,6 @@ function account_ui:_init(cbh, login_cb)
     self.acc_list:set_placeholder(lbl_no_acc)
 
     self:init_accounts()
-    self.handle:show_all()
 end
 
 function account_ui:build_acc_row(id, name)

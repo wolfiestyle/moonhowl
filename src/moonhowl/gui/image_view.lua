@@ -7,7 +7,6 @@ local image_view = object:extend()
 
 function image_view:_init()
     self.handle = Gtk.Image{ id = "image_view" }
-    self.handle:show()
 end
 
 function image_view:set_content(url)

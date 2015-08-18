@@ -38,6 +38,8 @@ function tabbed_view:add(obj, label_str)
     local label = ui.tab_label:new(label_str, self:bind_1(self.close_tab, obj))
     obj.label = label
     self.child[obj.handle] = obj
+    label.handle:show_all()
+    obj.handle:show_all()
     local id = self.handle:append_page(obj.handle, label.handle)
     self.handle:set_current_page(id)
     return obj, id

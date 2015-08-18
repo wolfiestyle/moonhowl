@@ -25,7 +25,6 @@ function user_view:_init(user)
     self.info = child.info
 
     self:set_content(user)
-    self.handle:show_all()
 end
 
 local function format(fmt, user)

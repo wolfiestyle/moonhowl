@@ -15,8 +15,6 @@ function tab_label:_init(label_str, close_fn)
         },
     }
     self.label = self.handle.child.label
-
-    self.handle:show_all()
 end
 
 function tab_label:set_text(str)

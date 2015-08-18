@@ -13,7 +13,6 @@ function default_min_view:_init(obj)
         label = obj._type,
         self.child.handle,
     }
-    self.handle:show_all()
 end
 
 return default_min_view

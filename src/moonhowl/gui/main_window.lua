@@ -33,6 +33,7 @@ function main_window:set_child(obj)
         self.handle:remove(child_w)
     end
     self.child = obj
+    obj.handle:show_all()
     self.handle:add(obj.handle)
 end
 
