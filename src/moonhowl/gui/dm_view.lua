@@ -22,8 +22,8 @@ function dm_view:_init(dm)
             },
         },
     }
-    self.icon.handle.yalign = 0
-    self.icon.handle.ypad = 3
+    self.icon.handle.valign = Gtk.Align.START
+    self.icon.handle.margin_top = 3
 
     local child = self.handle.child
     self.header = child.header

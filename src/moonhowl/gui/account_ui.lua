@@ -63,7 +63,7 @@ function account_ui:_init(cbh, login_cb)
                             orientation = Gtk.Orientation.VERTICAL,
                             Gtk.Box{
                                 spacing = 5,
-                                margin_left = 10,
+                                margin_start = 10,
                                 Gtk.Label{ label = "<b>Step 1:</b> Requesting OAuth token", use_markup = true },
                                 Gtk.Button{ id = "cmd_retry1", label = "Retry", on_clicked = self._next },
                                 Gtk.Spinner{ id = "spn1" },
@@ -75,17 +75,17 @@ function account_ui:_init(cbh, login_cb)
                         Gtk.Box{
                             orientation = Gtk.Orientation.VERTICAL,
                             spacing = 5,
-                            margin_left = 10,
+                            margin_start = 10,
                             Gtk.Label{ label = "<b>Step 2:</b> Sign in with Twitter", use_markup = true, xalign = 0 },
                             Gtk.Box{
                                 spacing = 5,
-                                margin_left = 10,
+                                margin_start = 10,
                                 Gtk.Label{ label = "Auth URL:" },
                                 Gtk.LinkButton{ id = "cmd_auth_url", label = "Open in browser" },
                             },
                             Gtk.Box{
                                 spacing = 5,
-                                margin_left = 10,
+                                margin_start = 10,
                                 Gtk.Entry{ id = "pin", placeholder_text = "Enter PIN", on_activate = self._next },
                                 Gtk.Button{ id = "cmd_confirm", label = "Confirm", on_clicked = self._next },
                                 Gtk.Button{ id = "cmd_cancel2", label = "Cancel", on_clicked = self:bind(self.cancel_login) },

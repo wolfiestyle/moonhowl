@@ -10,7 +10,7 @@ function default_view:_init(obj)
         id = "default_view",
         label = pretty.write(obj),
         xalign = 0,
-        yalign = 0,
+        valign = Gtk.Align.START,
         wrap = true,
         wrap_mode = "WORD_CHAR",
     }
