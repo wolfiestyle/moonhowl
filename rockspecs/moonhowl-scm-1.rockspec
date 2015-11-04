@@ -19,6 +19,7 @@ dependencies = {
     "lgi >= 0.9.0",
     "lpeg >= 0.12.2",
     "luatwit >= 0.3.2",
+    "luautf8 >= 0.1",
     "penlight >= 1.3.2",
 }
 

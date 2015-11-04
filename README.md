@@ -7,4 +7,5 @@ Twitter client written in Lua.
 - lgi
 - lpeg
 - luatwit
+- luautf8
 - penlight
