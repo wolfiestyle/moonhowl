@@ -2,6 +2,7 @@ local lgi = require "lgi"
 local Gtk = lgi.Gtk
 local utf8 = require "lua-utf8"
 local object = require "moonhowl.object"
+local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
 
 local tweet_view = object:extend()
@@ -81,21 +82,53 @@ local function parse_tweet(tweet)
            '<small><span color="gray">' .. table.concat(footer, ", ") .. '</span></small>'  -- footer
 end
 
+local selected_for_click
+
+local function tag_event(tag, _, ev)
+    if ev:triggers_context_menu() then
+        --TODO: select context action
+        print("contextual for:", tag.name)
+        return true
+    end
+    if ev.type == "BUTTON_PRESS" then
+        if ev.button.button == 1 then  -- at this point the mouse is grabbed
+            selected_for_click = tag
+        end
+    -- detect press and release on the same tag
+    elseif ev.type == "BUTTON_RELEASE" and ev.button.button == 1 and selected_for_click == tag then
+        --TODO: select URI action
+        signal.emit("ui_new_tab", tag.name)
+    end
+end
+
+-- detect mouse ungrab
+local function texview_button_release(_, ev)
+    if ev.button == 1 then
+        selected_for_click = nil
+    end
+end
+
+-- entity_node -> (name_field, uri_format)
+local entity_categs = {
+    media = { "expanded_url", "%s" },
+    urls = { "expanded_url", "%s" },
+    user_mentions = { "screen_name", "user:%s" },
+    hashtags = { "text", "search:%s" },
+}
+
 -- uses the entity indices to add links to the text
-local function add_text_tags(buf, tweet, categ_desc)
+local function add_text_tags(buf, tweet)
     local tag_table = buf.tag_table
     for name, categ in pairs(tweet.entities) do
-        local desc = categ_desc[name]
+        local desc = entity_categs[name]
         if desc then
-            local name_field, fmt, event_h = unpack(desc)
+            local name_field, fmt = unpack(desc)
             for _, entry in ipairs(categ) do
                 local tag_name = fmt:format(entry[name_field])
                 local tag = tag_table:lookup(tag_name)
                 if not tag then
                     tag = Gtk.TextTag{ name = tag_name, foreground = "blue" } --FIXME: get link color from theme
-                    if event_h then
-                        tag.on_event = event_h  -- setting nil here will crash
-                    end
+                    tag.on_event = tag_event
                     tag_table:add(tag)
                 end
                 local indices = entry._indices or entry.indices
@@ -123,14 +156,6 @@ local function tooltip_callback(self, wx, wy, keyboard_mode, tooltip)
     end
 end
 
--- entity_node -> (name_field, uri_format, event_handler)
-local entity_categs = {
-    media = { "expanded_url", "%s" },
-    urls = { "expanded_url", "%s" },
-    user_mentions = { "screen_name", "user:%s" },
-    hashtags = { "text", "search:%s" },
-}
-
 function tweet_view:_init(tweet)
     local grid = Gtk.Grid{
         id = "tweet_view",
@@ -157,6 +182,7 @@ function tweet_view:_init(tweet)
         has_tooltip = true,
         on_query_tooltip = tooltip_callback,
         hexpand = true,
+        on_button_release_event = texview_button_release,
     }
 
     local footer = Gtk.Label{
@@ -190,7 +216,7 @@ function tweet_view:set_content(tweet)
     local display_tweet = tweet.retweeted_status or tweet
     local buf = self.text.buffer
     buf:set_text(text, -1)
-    add_text_tags(buf, display_tweet, entity_categs)
+    add_text_tags(buf, display_tweet)
 
     self.icon:set_content(display_tweet.user.profile_image_url)
 end

@@ -23,6 +23,7 @@ function tabbed_view:_init()
     self.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
 
     signal.listen("ui_update_tab", self.signal_update_tab, self)
+    signal.listen("ui_new_tab", self.signal_new_tab, self)
 
     self.child = {}
 
@@ -86,6 +87,18 @@ end
 function tabbed_view:cmd_new_tab__clicked()
     local _, id = self:new_tab()
     config.tabs[id + 1] = false
+end
+
+function tabbed_view:signal_new_tab(uri)
+    local loc, err = location:new(uri)
+    if loc ~= nil then
+        local page, id = self:new_tab()
+        page:set_location(loc)
+        config.tabs[id + 1] = uri
+        return page:refresh()
+    else
+        return signal.emit("ui_message", err, true)
+    end
 end
 
 function tabbed_view:close_tab(tab)
