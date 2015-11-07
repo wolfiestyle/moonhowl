@@ -217,6 +217,18 @@ function tweet_view:set_content(tweet)
     buf:set_text(text, -1)
     add_text_tags(buf, display_tweet)
 
+    local user_uri = "user:" .. display_tweet.user.screen_name
+    self.icon.handle.tooltip_text = user_uri
+    self.icon:set_on_clicked(function()
+        return signal.emit("ui_open_uri", user_uri)
+    end)
+    self.handle.on_button_press_event = function(_, ev)
+        if ev:triggers_context_menu() then
+            print("contextual for:", user_uri)  --TODO
+            return true
+        end
+    end
+
     self.icon:set_content(display_tweet.user.profile_image_url)
 end
 
