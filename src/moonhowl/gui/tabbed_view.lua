@@ -1,5 +1,6 @@
 local lgi = require "lgi"
 local Gtk = lgi.Gtk
+local Gdk = lgi.Gdk
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
@@ -23,7 +24,7 @@ function tabbed_view:_init()
     self.handle:set_action_widget(cmd_new_tab, Gtk.PackType.END)
 
     signal.listen("ui_update_tab", self.signal_update_tab, self)
-    signal.listen("ui_new_tab", self.signal_new_tab, self)
+    signal.listen("ui_open_uri", self.signal_open_uri, self)
 
     self.child = {}
 
@@ -89,9 +90,13 @@ function tabbed_view:cmd_new_tab__clicked()
     config.tabs[id + 1] = false
 end
 
-function tabbed_view:signal_new_tab(uri)
+function tabbed_view:signal_open_uri(uri)
     local loc, err = location:new(uri)
     if loc ~= nil then
+        if not loc.action then
+            Gtk.show_uri(nil, uri, Gdk.CURRENT_TIME)
+            return signal.emit("ui_message", "Opening in external browser: " .. uri)
+        end
         local page, id = self:new_tab()
         page:set_location(loc)
         config.tabs[id + 1] = uri

@@ -39,7 +39,16 @@ do
     patt_args = path * query^-1 * -1
 end
 
+local function convert_twitter_urls(uri)
+    local tweet_id = uri:match "^https?://twitter.com/[%w_]+/status/(%d+)"
+    if tweet_id then
+        return "tweet:" .. tweet_id
+    end
+    return uri
+end
+
 function location:_init(uri)
+    uri = convert_twitter_urls(uri)
     local cmd, args = patt_uri:match(uri)
     if cmd ~= nil then
         return self:_parse_command(cmd, args)
@@ -49,9 +58,10 @@ function location:_init(uri)
 end
 
 function location:_parse_command(name, args)
+    self.uri = name .. ":" .. args
     local cmd = commands[name]
     if not cmd then
-        return "Invalid scheme: " .. name
+        return  -- no action -> handled externally
     end
     local path, query
     if not cmd.raw then
@@ -70,7 +80,6 @@ function location:_parse_command(name, args)
         path = args
     end
 
-    self.uri = name .. ":" .. args
     self.path = path
     self.query = query or {}
     self.action = cmd.action

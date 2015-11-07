@@ -96,8 +96,7 @@ local function tag_event(tag, _, ev)
         end
     -- detect press and release on the same tag
     elseif ev.type == "BUTTON_RELEASE" and ev.button.button == 1 and selected_for_click == tag then
-        --TODO: select URI action
-        signal.emit("ui_new_tab", tag.name)
+        return signal.emit("ui_open_uri", tag.name)
     end
 end
 
