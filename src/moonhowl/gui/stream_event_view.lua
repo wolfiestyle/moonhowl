@@ -34,6 +34,7 @@ function stream_event_view:set_content(ev)
             view_name = "default_min_view"
         end
         local view = ui[view_name]:new(obj)
+        view.handle.opacity = 0.7
         self.handle:add(view.handle)
     end
 end
