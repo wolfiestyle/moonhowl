@@ -1,6 +1,6 @@
 # MoonHowl
 
-Twitter client written in Lua.
+Twitter client written in Lua. Work in progress, not usable yet.
 
 ## Dependencies
 
