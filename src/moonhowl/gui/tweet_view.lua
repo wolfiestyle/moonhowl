@@ -238,6 +238,12 @@ function tweet_view:set_content(tweet)
     end
 
     self.icon:set_content(display_tweet.user.profile_image_url)
+
+    local ext = tweet.extended_entities
+    if ext and ext.media and next(ext.media) then
+        self.media = ui.media_view:new(ext.media, "thumb")
+        self.handle:attach(self.media.handle, 1, 3, 1, 1)
+    end
 end
 
 return tweet_view
