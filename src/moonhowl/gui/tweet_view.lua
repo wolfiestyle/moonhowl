@@ -192,10 +192,11 @@ function tweet_view:_init(tweet)
         wrap_mode = "WORD_CHAR",
     }
 
+    -- rows: 0=header, 1=text, 2=quoted, 3=media, 4=footer
     grid:attach(icon.handle, 0, 0, 1, 2)
     grid:attach(header, 1, 0, 1, 1)
     grid:attach(text, 1, 1, 1, 1)
-    grid:attach(footer, 1, 2, 1, 1)
+    grid:attach(footer, 1, 4, 1, 1)
 
     self.handle = grid
     self.icon = icon
@@ -227,6 +228,13 @@ function tweet_view:set_content(tweet)
             print("contextual for:", user_uri)  --TODO
             return true
         end
+    end
+
+    if tweet.quoted_status then
+        self.quoted = tweet_view:new(tweet.quoted_status)
+        local quoted = self.quoted.handle
+        quoted.margin = 5
+        self.handle:attach(Gtk.Frame{ quoted }, 1, 2, 1, 1)
     end
 
     self.icon:set_content(display_tweet.user.profile_image_url)
