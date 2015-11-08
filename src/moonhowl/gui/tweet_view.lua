@@ -223,7 +223,7 @@ function tweet_view:set_content(tweet)
     self.icon:set_on_clicked(function()
         return signal.emit("ui_open_uri", user_uri)
     end)
-    self.handle.on_button_press_event = function(_, ev)
+    self.icon.handle.on_button_press_event = function(_, ev)
         if ev:triggers_context_menu() then
             print("contextual for:", user_uri)  --TODO
             return true
