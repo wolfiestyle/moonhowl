@@ -1,59 +1,14 @@
 local lgi = require "lgi"
 local Gtk = lgi.Gtk
-local utf8 = require "lua-utf8"
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
+local entities = require "moonhowl.entities"
 
 local tweet_view = object:extend()
 
 local function escape_amp(text)
     return text:gsub("&", "&amp;")
-end
-
--- replaces t.co URLs with their display_url and fixes the entity indices
-local function replace_display_urls(tweet)
-    if tweet._text then
-        return tweet._text
-    end
-    -- collect interesting entities
-    local entities = {}
-    for _, categ in pairs(tweet.entities) do
-        if type(categ) == "table" then
-            for _, entity in ipairs(categ) do
-                if entity.indices then
-                    entities[#entities + 1] = entity
-                end
-            end
-        end
-    end
-    -- we assume that ranges don't overlap, so we can sort them
-    table.sort(entities, function(a, b)
-        return a.indices[1] < b.indices[1]
-    end)
-    -- now apply the replacements
-    local text = tweet.text
-    local buf, pos, offset = {}, 1, 0
-    for _, entity in ipairs(entities) do
-        local rs, re = unpack(entity.indices)
-        local display_url = entity.display_url
-        if display_url then
-            buf[#buf + 1] = utf8.sub(text, pos, rs) -- before
-            buf[#buf + 1] = display_url             -- replaced segment
-            pos = re + 1
-            -- save the fixed indices
-            local dl = utf8.len(display_url) + rs - re  -- length difference
-            entity._indices = { rs + offset, re + offset + dl }
-            offset = offset + dl
-        else
-            entity._indices = { rs + offset, re + offset }
-        end
-    end
-    -- save the fixed text
-    buf[#buf + 1] = utf8.sub(text, pos, utf8.len(text))
-    local newtext = table.concat(buf)
-    tweet._text = newtext
-    return newtext
 end
 
 -- extracts and formats the relevant information from a tweet
@@ -77,8 +32,15 @@ local function parse_tweet(tweet)
         footer[#footer + 1] = "in reply to @" .. tweet.in_reply_to_screen_name
     end
     footer[#footer + 1] = "via " .. tweet.source:gsub('rel=".*"', '') -- it's a valid link, but pango chokes with the extra attribute
+
+    local text = tweet._text
+    if not text then
+        text = entities.parse(tweet.text, tweet.entities)
+        tweet._text = text
+    end
+
     return table.concat(header, " "),   -- header
-           replace_display_urls(tweet), -- text
+            text,   -- segmented text
            '<small><span color="gray">' .. table.concat(footer, ", ") .. '</span></small>'  -- footer
 end
 
@@ -107,33 +69,23 @@ local function texview_button_release(_, ev)
     end
 end
 
--- entity_node -> (name_field, uri_format)
-local entity_categs = {
-    media = { "expanded_url", "%s" },
-    urls = { "expanded_url", "%s" },
-    user_mentions = { "screen_name", "user:%s" },
-    hashtags = { "text", "search:%s" },
-}
-
--- uses the entity indices to add links to the text
-local function add_text_tags(buf, tweet)
+-- adds the URI's defined in seg_text as links in the text buffer
+local function add_text_tags(buf, seg_text)
+    local pos = 0
     local tag_table = buf.tag_table
-    for name, categ in pairs(tweet.entities) do
-        local desc = entity_categs[name]
-        if desc then
-            local name_field, fmt = unpack(desc)
-            for _, entry in ipairs(categ) do
-                local tag_name = fmt:format(entry[name_field])
-                local tag = tag_table:lookup(tag_name)
-                if not tag then
-                    tag = Gtk.TextTag{ name = tag_name, foreground = "blue" } --FIXME: get link color from theme
-                    tag.on_event = tag_event
-                    tag_table:add(tag)
-                end
-                local indices = entry._indices or entry.indices
-                buf:apply_tag(tag, buf:get_iter_at_offset(indices[1]), buf:get_iter_at_offset(indices[2]))
+    for _, elem in ipairs(seg_text) do
+        local npos = pos + elem.len
+        local tag_name = elem.uri
+        if tag_name then
+            local tag = tag_table:lookup(tag_name)
+            if not tag then
+                tag = Gtk.TextTag{ name = tag_name, foreground = "blue" }
+                tag.on_event = tag_event
+                tag_table:add(tag)
             end
+            buf:apply_tag(tag, buf:get_iter_at_offset(pos), buf:get_iter_at_offset(npos))
         end
+        pos = npos
     end
 end
 
@@ -209,15 +161,15 @@ end
 
 function tweet_view:set_content(tweet)
     self.content = tweet
-    local header, text, footer = parse_tweet(tweet)
+    local header, seg_text, footer = parse_tweet(tweet)
     self.header:set_label(header)
     self.footer:set_label(footer)
 
-    local display_tweet = tweet.retweeted_status or tweet
     local buf = self.text.buffer
-    buf:set_text(text, -1)
-    add_text_tags(buf, display_tweet)
+    buf:set_text(tostring(seg_text), -1)
+    add_text_tags(buf, seg_text)
 
+    local display_tweet = tweet.retweeted_status or tweet
     local user_uri = "user:" .. display_tweet.user.screen_name
     self.icon.handle.tooltip_text = user_uri
     self.icon:set_on_clicked(function()
