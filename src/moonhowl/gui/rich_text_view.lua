@@ -82,11 +82,11 @@ function rich_text_view:_init()
     }
 end
 
-function rich_text_view:set_content(obj, field_name)
+function rich_text_view:set_content(obj, field_name, entities_node)
     local cached_name = "_" .. field_name
     local text = obj[cached_name]
     if not text then
-        text = entities.parse(obj[field_name], obj.entities)
+        text = entities.parse(obj[field_name], entities_node or obj.entities)
         obj[cached_name] = text
     end
 

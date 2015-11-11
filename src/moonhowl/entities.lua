@@ -23,6 +23,7 @@ local entity_categs = {
     --symbols = not interesting...
 }
 
+-- a segmented_text is an array of text slices with attributes
 local segmented_text_mt = {}
 
 function segmented_text_mt:__tostring()
@@ -38,6 +39,22 @@ function segmented_text_mt:__tostring()
     return as_str
 end
 
+local function generate_hashtags(buf, text)
+    for rs, word, re in utf8.gmatch(text, "()#(%a[%w_]*)()") do
+        buf[#buf + 1] = { "hashtags", { text = word, indices = { rs - 1, re - 1 } } }
+    end
+end
+
+local function generate_mentions(buf, text)
+    for rs, word, re in utf8.gmatch(text, "()@([A-Za-z0-9_]+)()") do  -- %w will match non-ascii chars
+        buf[#buf + 1] = { "user_mentions", { screen_name = word, indices = { rs - 1, re - 1 } } }
+    end
+end
+
+local function entity_lt(a, b)
+    return a[2].indices[1] < b[2].indices[1]
+end
+
 -- splits the text into segments delimited by the entities
 local function parse_entities(text, entities_node)
     -- collect all entities
@@ -50,10 +67,15 @@ local function parse_entities(text, entities_node)
             end
         end
     end
+    -- user objects don't have hashtag or mentions entities
+    if not entities_node.hashtags then
+        generate_hashtags(entities, text)
+    end
+    if not entities_node.user_mentions then
+        generate_mentions(entities, text)
+    end
     -- we assume that ranges don't overlap, so we can sort them
-    table_sort(entities, function(a, b)
-        return a[2].indices[1] < b[2].indices[1]
-    end)
+    table_sort(entities, entity_lt)
     -- build an array of text segments from the entity ranges
     local buf, pos = {}, 1
     for _, pair in ipairs(entities) do
