@@ -3,7 +3,6 @@ local Gtk = lgi.Gtk
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
-local entities = require "moonhowl.entities"
 
 local tweet_view = object:extend()
 
@@ -33,78 +32,8 @@ local function parse_tweet(tweet)
     end
     footer[#footer + 1] = "via " .. tweet.source:gsub('rel=".*"', '') -- it's a valid link, but pango chokes with the extra attribute
 
-    local text = tweet._text
-    if not text then
-        text = entities.parse(tweet.text, tweet.entities)
-        tweet._text = text
-    end
-
     return table.concat(header, " "),   -- header
-            text,   -- segmented text
            '<small><span color="gray">' .. table.concat(footer, ", ") .. '</span></small>'  -- footer
-end
-
-local selected_for_click
-
-local function tag_event(tag, _, ev)
-    if ev:triggers_context_menu() then
-        --TODO: select context action
-        print("contextual for:", tag.name)
-        return true
-    end
-    if ev.type == "BUTTON_PRESS" then
-        if ev.button.button == 1 then  -- at this point the mouse is grabbed
-            selected_for_click = tag
-        end
-    -- detect press and release on the same tag
-    elseif ev.type == "BUTTON_RELEASE" and ev.button.button == 1 and selected_for_click == tag then
-        return signal.emit("ui_open_uri", tag.name)
-    end
-end
-
--- detect mouse ungrab
-local function texview_button_release(_, ev)
-    if ev.button == 1 then
-        selected_for_click = nil
-    end
-end
-
--- adds the URI's defined in seg_text as links in the text buffer
-local function add_text_tags(buf, seg_text)
-    local pos = 0
-    local tag_table = buf.tag_table
-    for _, elem in ipairs(seg_text) do
-        local npos = pos + elem.len
-        local tag_name = elem.uri
-        if tag_name then
-            local tag = tag_table:lookup(tag_name)
-            if not tag then
-                tag = Gtk.TextTag{ name = tag_name, foreground = "blue" }
-                tag.on_event = tag_event
-                tag_table:add(tag)
-            end
-            buf:apply_tag(tag, buf:get_iter_at_offset(pos), buf:get_iter_at_offset(npos))
-        end
-        pos = npos
-    end
-end
-
--- used by Gtk to figure out what tooltip to display
-local function tooltip_callback(self, wx, wy, keyboard_mode, tooltip)
-    local iter
-    if keyboard_mode then
-        iter = self.buffer:get_iter_at_offset(self.buffer.cursor_position)
-    else
-        local x, y = self:window_to_buffer_coords(Gtk.TextWindowType.TEXT, wx, wy)
-        iter = self:get_iter_at_location(x, y)
-    end
-
-    local _, tag = next(iter:get_tags())
-    if tag then
-        tooltip:set_text(tag.name)
-        tooltip:set_icon_from_stock(Gtk.STOCK_INFO, Gtk.IconSize.MENU)
-        return true
-    end
 end
 
 function tweet_view:_init(tweet)
@@ -125,16 +54,7 @@ function tweet_view:_init(tweet)
         ellipsize = "END",
     }
 
-    local text = Gtk.TextView{  --FIXME: set bg color to window bg
-        id = "text",
-        editable = false,
-        cursor_visible = false,
-        wrap_mode = Gtk.WrapMode.WORD_CHAR,
-        has_tooltip = true,
-        on_query_tooltip = tooltip_callback,
-        hexpand = true,
-        on_button_release_event = texview_button_release,
-    }
+    local text = ui.rich_text_view:new()
 
     local footer = Gtk.Label{
         id = "footer",
@@ -147,7 +67,7 @@ function tweet_view:_init(tweet)
     -- rows: 0=header, 1=text, 2=quoted, 3=media, 4=footer
     grid:attach(icon.handle, 0, 0, 1, 2)
     grid:attach(header, 1, 0, 1, 1)
-    grid:attach(text, 1, 1, 1, 1)
+    grid:attach(text.handle, 1, 1, 1, 1)
     grid:attach(footer, 1, 4, 1, 1)
 
     self.handle = grid
@@ -161,15 +81,13 @@ end
 
 function tweet_view:set_content(tweet)
     self.content = tweet
-    local header, seg_text, footer = parse_tweet(tweet)
+    local header, footer = parse_tweet(tweet)
     self.header:set_label(header)
     self.footer:set_label(footer)
 
-    local buf = self.text.buffer
-    buf:set_text(tostring(seg_text), -1)
-    add_text_tags(buf, seg_text)
-
     local display_tweet = tweet.retweeted_status or tweet
+    self.text:set_content(display_tweet, "text")
+
     local user_uri = "user:" .. display_tweet.user.screen_name
     self.icon.handle.tooltip_text = user_uri
     self.icon:set_on_clicked(function()
