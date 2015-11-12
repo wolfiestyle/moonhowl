@@ -5,7 +5,7 @@ local ui = require "moonhowl.ui"
 
 local stream_event_view = object:extend()
 
-function stream_event_view:_init(obj)
+function stream_event_view:_init()
     self.handle = Gtk.Box{
         id = "stream_event_view",
         orientation = Gtk.Orientation.VERTICAL,
@@ -14,7 +14,6 @@ function stream_event_view:_init(obj)
         Gtk.Label{ id = "title", xalign = 0 },
     }
     self.title = self.handle.child.title
-    self:set_content(obj)
 end
 
 local type_to_view = {

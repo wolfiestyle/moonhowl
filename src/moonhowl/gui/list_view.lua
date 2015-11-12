@@ -21,4 +21,21 @@ function list_view:add(obj)
     self.list:add(row)
 end
 
+function list_view:add_list_of(class, list)
+    for _, obj in ipairs(list) do
+        local view = class:new()
+        view:set_content(obj)
+        self:add(view)
+    end
+end
+
+function list_view:clear()
+    --TODO, but not needed atm
+end
+
+function list_view:set_content(list)
+    self:clear()
+    return self:add_list(list)  -- implemented in subclasses
+end
+
 return list_view

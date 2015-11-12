@@ -66,7 +66,9 @@ local function create_view(content)
     if not view_name then
         view_name = "default_view"
     end
-    return ui[view_name]:new(content)
+    local view = ui[view_name]:new()
+    view:set_content(content)
+    return view
 end
 
 function page_container:setup_view(view_name, label)

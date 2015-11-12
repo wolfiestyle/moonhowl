@@ -5,7 +5,7 @@ local ui = require "moonhowl.ui"
 
 local user_view = object:extend()
 
-function user_view:_init(user)
+function user_view:_init()
     self.icon = ui.image_view:new()
     self.bio = ui.rich_text_view:new()
     self.handle = Gtk.Box{
@@ -23,8 +23,6 @@ function user_view:_init(user)
     local child = self.handle.child
     self.name = child.name
     self.info = child.info
-
-    self:set_content(user)
 end
 
 local function format(fmt, user)

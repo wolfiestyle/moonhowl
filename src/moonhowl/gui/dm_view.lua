@@ -5,7 +5,7 @@ local ui = require "moonhowl.ui"
 
 local dm_view = object:extend()
 
-function dm_view:_init(dm)
+function dm_view:_init()
     self.icon = ui.image_view:new()
     self.handle = Gtk.Box{
         id = "dm_view",
@@ -28,8 +28,6 @@ function dm_view:_init(dm)
     local child = self.handle.child
     self.header = child.header
     self.text = child.text
-
-    self:set_content(dm)
 end
 
 function dm_view:set_content(dm)

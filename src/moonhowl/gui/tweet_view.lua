@@ -36,7 +36,7 @@ local function parse_tweet(tweet)
            '<small><span color="gray">' .. table.concat(footer, ", ") .. '</span></small>'  -- footer
 end
 
-function tweet_view:_init(tweet)
+function tweet_view:_init()
     local grid = Gtk.Grid{
         id = "tweet_view",
         row_spacing = 5,
@@ -75,8 +75,6 @@ function tweet_view:_init(tweet)
     self.header = header
     self.text = text
     self.footer = footer
-
-    self:set_content(tweet)
 end
 
 function tweet_view:set_content(tweet)
@@ -111,7 +109,8 @@ function tweet_view:set_content(tweet)
 
     local ext = tweet.extended_entities
     if ext and ext.media and next(ext.media) then
-        self.media = ui.media_view:new(ext.media, "thumb")
+        self.media = ui.media_view:new()
+        self.media:set_content(ext.media, "thumb")
         self.handle:attach(self.media.handle, 1, 3, 1, 1)
     end
 end
