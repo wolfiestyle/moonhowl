@@ -32,7 +32,8 @@ function stream_event_view:set_content(ev)
         if not view_name then
             view_name = "default_min_view"
         end
-        local view = ui[view_name]:new(obj)
+        local view = ui[view_name]:new()
+        view:set_content(obj)
         view.handle.opacity = 0.7
         self.handle:add(view.handle)
     end

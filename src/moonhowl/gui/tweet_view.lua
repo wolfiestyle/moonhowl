@@ -83,10 +83,10 @@ function tweet_view:set_content(tweet)
     self.header:set_label(header)
     self.footer:set_label(footer)
 
-    local display_tweet = tweet.retweeted_status or tweet
-    self.text:set_content(display_tweet, "text")
+    tweet = tweet.retweeted_status or tweet
+    self.text:set_content(tweet, "text")
 
-    local user_uri = "user:" .. display_tweet.user.screen_name
+    local user_uri = "user:" .. tweet.user.screen_name
     self.icon.handle.tooltip_text = user_uri
     self.icon:set_on_clicked(function()
         return signal.emit("ui_open_uri", user_uri)
@@ -99,13 +99,14 @@ function tweet_view:set_content(tweet)
     end
 
     if tweet.quoted_status then
-        self.quoted = tweet_view:new(tweet.quoted_status)
+        self.quoted = tweet_view:new()
+        self.quoted:set_content(tweet.quoted_status)
         local quoted = self.quoted.handle
         quoted.margin = 5
         self.handle:attach(Gtk.Frame{ quoted }, 1, 2, 1, 1)
     end
 
-    self.icon:set_content(display_tweet.user.profile_image_url)
+    self.icon:set_content(tweet.user.profile_image_url)
 
     local ext = tweet.extended_entities
     if ext and ext.media and next(ext.media) then
