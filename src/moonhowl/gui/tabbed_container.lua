@@ -7,11 +7,11 @@ local ui = require "moonhowl.ui"
 local config = require "moonhowl.config"
 local location = require "moonhowl.location"
 
-local tabbed_view = object:extend()
+local tabbed_container = object:extend()
 
-function tabbed_view:_init()
+function tabbed_container:_init()
     self.handle = Gtk.Notebook{
-        id = "tabbed_view",
+        id = "tabbed_container",
         scrollable = true,
         vexpand = true,
     }
@@ -36,7 +36,7 @@ function tabbed_view:_init()
     end
 end
 
-function tabbed_view:add(obj, label_str)
+function tabbed_container:add(obj, label_str)
     local label = ui.tab_label:new(label_str, self:bind_1(self.close_tab, obj))
     obj.label = label
     self.child[obj.handle] = obj
@@ -47,7 +47,7 @@ function tabbed_view:add(obj, label_str)
     return obj, id
 end
 
-function tabbed_view:remove(widget)
+function tabbed_container:remove(widget)
     local id = self.handle:page_num(widget)
     self.handle:remove_page(id)
     local close_cb = self.child[widget].cleanup
@@ -58,11 +58,11 @@ function tabbed_view:remove(widget)
     return id
 end
 
-function tabbed_view:new_tab()
+function tabbed_container:new_tab()
     return self:add(ui.page_container:new())
 end
 
-function tabbed_view:init_tabs()
+function tabbed_container:init_tabs()
     for _, uri in ipairs(config.tabs) do
         local page = self:new_tab()
         if uri then
@@ -80,17 +80,17 @@ function tabbed_view:init_tabs()
     end
 end
 
-function tabbed_view:handle__on_switch_page(_, page_w)
+function tabbed_container:handle__on_switch_page(_, page_w)
     local obj = self.child[page_w]
     return signal.emit("ui_set_current_uri", obj.location and obj.location.uri)
 end
 
-function tabbed_view:cmd_new_tab__clicked()
+function tabbed_container:cmd_new_tab__clicked()
     local _, id = self:new_tab()
     config.tabs[id + 1] = false
 end
 
-function tabbed_view:signal_open_uri(uri)
+function tabbed_container:signal_open_uri(uri)
     local loc, err = location:new(uri)
     if loc ~= nil then
         if not loc.action then
@@ -106,7 +106,7 @@ function tabbed_view:signal_open_uri(uri)
     end
 end
 
-function tabbed_view:close_tab(tab)
+function tabbed_container:close_tab(tab)
     local id = self:remove(tab.handle)
     table.remove(config.tabs, id + 1)
     if self.handle:get_n_pages() == 0 then
@@ -114,15 +114,15 @@ function tabbed_view:close_tab(tab)
     end
 end
 
-function tabbed_view:signal_update_tab(page, uri)
+function tabbed_container:signal_update_tab(page, uri)
     local id = self.handle:page_num(page.handle)
     config.tabs[id + 1] = uri
 end
 
-function tabbed_view:refresh_all()
+function tabbed_container:refresh_all()
     for _, page in pairs(self.child) do
         page:refresh()
     end
 end
 
-return tabbed_view
+return tabbed_container

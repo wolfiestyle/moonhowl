@@ -7,7 +7,7 @@ local ui = require "moonhowl.ui"
 local main_ui = object:extend()
 
 function main_ui:_init()
-    self.tabs = ui.tabbed_view:new()
+    self.tabs = ui.tabbed_container:new()
     self.infobar = ui.info_bar:new()
     self.tweet_entry = ui.tweet_entry:new()
 
