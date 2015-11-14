@@ -31,7 +31,7 @@ function list_view:add_list_of(class, list)
 end
 
 function list_view:clear()
-    --TODO, but not needed atm
+    return self.handle:foreach(Gtk.Widget.destroy)
 end
 
 function list_view:set_content(list)
