@@ -14,7 +14,7 @@ function dm_list_view:add_list(list)
 end
 
 function dm_list_view:sort_func(ra, rb)
-    return self[rb] - self[ra]
+    return rb.priv.content - ra.priv.content
 end
 
 return dm_list_view

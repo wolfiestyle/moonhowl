@@ -1,4 +1,5 @@
 local require = require
+require "moonhowl.gui"  -- load our custom namespace
 
 local ui = {
     _prefix = "moonhowl.gui.",

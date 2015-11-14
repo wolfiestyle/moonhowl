@@ -25,7 +25,7 @@ function tweet_list_view:refresh()
 end
 
 function tweet_list_view:sort_func(ra, rb)
-    local obja, objb = self[ra], self[rb]
+    local obja, objb = ra.priv.content, rb.priv.content
     if obja._type == "tweet" and objb._type == "tweet" then
         return objb - obja    -- sort by tweet id
     else

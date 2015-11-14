@@ -1,5 +1,6 @@
 local lgi = require "lgi"
 local Gtk = lgi.Gtk
+local Moonhowl = lgi.Moonhowl
 local object = require "moonhowl.object"
 
 local list_view = object:extend()
@@ -13,9 +14,9 @@ function list_view:_init()
 end
 
 function list_view:add(obj)
-    local row = Gtk.ListBoxRow{ obj.handle, activatable = false, margin = 5 }
+    local row = Moonhowl.ListBoxRow{ obj.handle, activatable = false, margin = 5 }
     if obj.content then
-        self[row] = obj.content
+        row.priv.content = obj.content
     end
     row:show_all()
     self.list:add(row)
