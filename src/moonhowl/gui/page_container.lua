@@ -39,38 +39,6 @@ function page_container:add(item)
     return self.child:add(item)
 end
 
-local type_to_view = {
-    tweet = "tweet_view",
-    tweet_list = "tweet_list_view",
-    tweet_search = "tweet_search_view",
-    user = "profile_view",
-    user_list = "user_list_view",
-    user_cursor = "user_cursor_view",
-    dm = "dm_view",
-    dm_list = "dm_list_view",
-    -- stream messages
-    tweet_deleted = "default_min_view",
-    scrub_geo = "default_min_view",
-    stream_limit = "default_min_view",
-    tweet_withheld = "default_min_view",
-    user_withheld = "default_min_view",
-    stream_disconnect = "default_min_view",
-    stream_warning = "default_min_view",
-    friend_list = "default_min_view",
-    friend_list_str = "default_min_view",
-    stream_event = "stream_event_view",
-}
-
-local function create_view(content)
-    local view_name = type_to_view[content._type]
-    if not view_name then
-        view_name = "default_view"
-    end
-    local view = ui[view_name]:new()
-    view:set_content(content)
-    return view
-end
-
 function page_container:setup_view(view_name, label)
     print("~setup_view", label, view_name)
     self.loaded = nil
@@ -82,11 +50,11 @@ function page_container:set_content(content, label)
     print("~set_content", label, content._type, content._source)
     self.loaded = true
     self.label:set_text(label)
-    return self:set_child(create_view(content))
+    return self:set_child(ui.view_for(content))
 end
 
 function page_container:append_content(content)
-    return self.child:add(create_view(content))
+    return self.child:add(ui.view_for(content))
 end
 
 function page_container:set_location(loc)

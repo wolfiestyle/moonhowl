@@ -16,11 +16,6 @@ function stream_event_view:_init()
     self.title = self.handle.child.title
 end
 
-local type_to_view = {
-    tweet = "tweet_view",
-    --userlist = "userlist_view",
-}
-
 function stream_event_view:set_content(ev)
     self.content = ev
     local title = ("* %s: %s -> %s"):format(ev.event, ev.source.screen_name, ev.target.screen_name)
@@ -28,13 +23,9 @@ function stream_event_view:set_content(ev)
 
     local obj = ev.target_object
     if obj then
-        local view_name = type_to_view[obj._type]
-        if not view_name then
-            view_name = "default_min_view"
-        end
-        local view = ui[view_name]:new()
-        view:set_content(obj)
+        local view = ui.view_for(obj, "default_min_view")
         view.handle.opacity = 0.7
+        self.object = view
         self.handle:add(view.handle)
     end
 end
