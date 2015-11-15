@@ -16,6 +16,7 @@ function page_container:_init()
         Gtk.ScrolledWindow{
             id = "scroll_win",
             vexpand = true,
+            on_edge_reached = self:bind(self.scroll__on_edge_reached),
         },
     }
     self.container = self.handle.child.scroll_win
@@ -69,6 +70,16 @@ function page_container:refresh()
             return self.child:refresh()
         else
             return self:location()
+        end
+    end
+end
+
+function page_container:scroll__on_edge_reached(_, pos)
+    if pos == "BOTTOM" then
+        local obj = self.child
+        local callback = obj.on_scroll_bottom
+        if callback then
+            return callback(obj)
         end
     end
 end

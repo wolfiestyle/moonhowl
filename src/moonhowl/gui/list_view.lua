@@ -6,20 +6,30 @@ local object = require "moonhowl.object"
 local list_view = object:extend()
 
 function list_view:_init()
+    self.count = 0
     self.handle = Gtk.ListBox{
         id = "list_view",
         selection_mode = "NONE",
     }
-    self.list = self.handle.child.list_view
 end
 
 function list_view:add(obj)
     local row = Moonhowl.ListBoxRow{ obj.handle, activatable = false, margin = 5 }
-    if obj.content then
-        row.priv.content = obj.content
+    local content = obj.content
+    if content then
+        row.priv.content = content
+        if content._type == self.main_type then
+            if not self.head or content > self.head then
+                self.head = content
+            end
+            if not self.tail or content < self.tail then
+                self.tail = content
+            end
+        end
     end
+    self.count = self.count + 1
     row:show_all()
-    self.list:add(row)
+    return self.handle:add(row)
 end
 
 function list_view:add_list_of(class, list)
@@ -31,7 +41,10 @@ function list_view:add_list_of(class, list)
 end
 
 function list_view:clear()
-    return self.handle:foreach(Gtk.Widget.destroy)
+    if self.count > 0 then
+        self.count = 0
+        return self.handle:foreach(Gtk.Widget.destroy)
+    end
 end
 
 function list_view:set_content(list)
