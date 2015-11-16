@@ -32,8 +32,13 @@ end
 
 function dm_view:set_content(dm)
     self.content = dm
+    local icon = ""
+    if dm._type == "stream_dm" then
+        dm = dm.direct_message
+        icon = "✉ "
+    end
     local user = dm.sender
-    self.header:set_label(('<b>%s</b> <span color="gray">%s</span>'):format(user.screen_name, user.name))
+    self.header:set_label(('%s<b>%s</b> <span color="gray">%s</span>'):format(icon, user.screen_name, user.name))
     self.text:set_label(dm.text)
     self.icon:set_content(user.profile_image_url)
 end

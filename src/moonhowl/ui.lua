@@ -33,6 +33,7 @@ local type_to_view = {
     friend_list = "default_min_view",
     friend_list_str = "default_min_view",
     stream_event = "stream_event_view",
+    stream_dm = "dm_view",
 }
 
 function ui.view_for(obj, default_name)
