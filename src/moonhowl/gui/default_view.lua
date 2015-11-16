@@ -16,6 +16,7 @@ function default_view:_init()
 end
 
 function default_view:set_content(obj)
+    self.content = obj
     self.handle:set_label(pretty.write(obj))
 end
 
