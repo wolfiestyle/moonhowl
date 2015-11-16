@@ -12,11 +12,15 @@ function tweet_list_view:_init()
     self._content_callback = {
         ok = function(list)
             self.loading = false
+            -- remove the overlapping tweet on bottom insert
+            if self.tail == list[1] then
+                table.remove(list, 1)
+            end
             return self:add_list(list)
         end,
         error = function(err)
             self.loading = false
-            return signal.emit("ui_message", err, true)
+            return signal.emit("ui_message", tostring(err), true)
         end,
     }
 end
