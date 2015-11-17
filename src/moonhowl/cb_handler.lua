@@ -1,5 +1,5 @@
-local io_stderr, table_remove, tostring, type =
-      io.stderr, table.remove, tostring, type
+local io_stderr, table_remove, tostring, type, xpcall =
+      io.stderr, table.remove, tostring, type, xpcall
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
@@ -13,10 +13,18 @@ function cb_handler:_init(http)
     self.seq_id = 0
 end
 
+local function do_traceback(err)
+    local msg = "cb_handler: " .. err
+    io_stderr:write(debug.traceback(msg, 2), "\n")
+    signal.emit("ui_message", msg, true)
+    return err  -- received by 'done'
+end
+
 function cb_handler:update()
     self.http:update()
     for i = #self, 1, -1 do
-        if self[i]() then
+        local _, done = xpcall(self[i], do_traceback)
+        if done then
             table_remove(self, i)
         end
     end
@@ -39,7 +47,7 @@ function cb_handler:add(obj, callback)
                 if res ~= nil then
                     (is_table and callback.ok or callback)(res, code_or_err)
                 else
-                    (is_table and callback.error or self.on_error)(code_or_err)
+                    self.on_error(code_or_err, is_table and callback.error)
                 end
                 return true
             end
@@ -59,7 +67,7 @@ function cb_handler:add(obj, callback)
                     data._seq_id = self:get_id();
                     (is_table and callback.ok or callback)(data)
                 else
-                    (is_table and callback.error or self.on_error)(data)
+                    self.on_error(data, is_table and callback.error)
                 end
             end
         end
@@ -74,7 +82,12 @@ function cb_handler:add(obj, callback)
     end
 end
 
-function cb_handler.on_error(err)
+function cb_handler.on_error(err, err_handler)
+    if err_handler then
+        local ret = err_handler(err)
+        if not ret then return end
+        err = ret
+    end
     err = tostring(err)
     io_stderr:write("cb_handler: ", err, "\n")
     return signal.emit("ui_message", err, true)

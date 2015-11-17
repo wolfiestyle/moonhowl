@@ -1,4 +1,3 @@
-local signal = require "moonhowl.signal"
 local ui = require "moonhowl.ui"
 local list_view = ui.list_view
 
@@ -20,7 +19,7 @@ function tweet_list_view:_init()
         end,
         error = function(err)
             self.loading = false
-            return signal.emit("ui_message", tostring(err), true)
+            return err
         end,
     }
 end
