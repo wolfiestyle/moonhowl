@@ -40,6 +40,7 @@ function page_container:add(item)
     return self.child:add(item)
 end
 
+-- prepares the list container for a stream
 function page_container:setup_view(view_name, label)
     print("~setup_view", label, view_name)
     self.loaded = nil
@@ -47,15 +48,17 @@ function page_container:setup_view(view_name, label)
     return self:set_child(ui[view_name]:new())
 end
 
+-- REST methods will call this
 function page_container:set_content(content, label)
     print("~set_content", label, content._type, content._source)
     self.loaded = true
     self.label:set_text(label)
-    return self:set_child(ui.view_for(content))
+    return self:set_child(ui.view_for(content, "default_view"))
 end
 
+-- streaming connections will call this
 function page_container:append_content(content)
-    return self.child:add(ui.view_for(content))
+    return self.child:add(ui.view_for(content, "default_min_view"))
 end
 
 function page_container:set_location(loc)

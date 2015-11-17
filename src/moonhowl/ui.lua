@@ -23,15 +23,15 @@ local type_to_view = {
     dm = "dm_view",
     dm_list = "dm_list_view",
     -- stream messages
-    tweet_deleted = "default_min_view",
-    scrub_geo = "default_min_view",
-    stream_limit = "default_min_view",
-    tweet_withheld = "default_min_view",
-    user_withheld = "default_min_view",
-    stream_disconnect = "default_min_view",
-    stream_warning = "default_min_view",
-    friend_list = "default_min_view",
-    friend_list_str = "default_min_view",
+    --tweet_deleted = "default_min_view",
+    --scrub_geo = "default_min_view",
+    --stream_limit = "default_min_view",
+    --tweet_withheld = "default_min_view",
+    --user_withheld = "default_min_view",
+    --stream_disconnect = "default_min_view",
+    --stream_warning = "default_min_view",
+    --friend_list = "default_min_view",
+    --friend_list_str = "default_min_view",
     stream_event = "stream_event_view",
     stream_dm = "dm_view",
 }
@@ -39,7 +39,8 @@ local type_to_view = {
 function ui.view_for(obj, default_name)
     local view_name = type_to_view[obj._type]
     if not view_name then
-        view_name = default_name or "default_view"
+        print("ui.view_for: unhandled object type:", obj._type)
+        view_name = default_name
     end
     local view = ui[view_name]:new()
     view:set_content(obj)
