@@ -29,8 +29,7 @@ end
 
 function main_window:set_child(obj)
     if self.child then
-        local child_w = self.handle:get_child()
-        self.handle:remove(child_w)
+        self.handle:get_child():destroy()
     end
     self.child = obj
     obj.handle:show_all()

@@ -50,11 +50,8 @@ end
 function tabbed_container:remove(widget)
     local id = self.handle:page_num(widget)
     self.handle:remove_page(id)
-    local close_cb = self.child[widget].cleanup
     self.child[widget] = nil
-    if close_cb then
-        close_cb()
-    end
+    widget:destroy()
     return id
 end
 

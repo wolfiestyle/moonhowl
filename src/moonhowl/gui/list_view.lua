@@ -10,6 +10,9 @@ function list_view:_init()
     self.handle = Gtk.ListBox{
         id = "list_view",
         selection_mode = "NONE",
+        on_destroy = function()
+            if self.cleanup then return self.cleanup() end
+        end,
     }
 end
 

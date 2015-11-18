@@ -23,13 +23,8 @@ function page_container:_init()
 end
 
 function page_container:set_child(obj)
-    if self.cleanup then
-        self.cleanup()
-        self.cleanup = nil
-    end
     if self.child then
-        local child_w = self.container:get_child() -- actual child can be a Gtk.Viewport
-        self.container:remove(child_w)
+        self.container:get_child():destroy()  -- actual child can be a Gtk.Viewport
     end
     self.child = obj
     obj.handle:show_all()
