@@ -6,33 +6,77 @@ local signal = require "moonhowl.signal"
 local tweet_entry = object:extend()
 
 function tweet_entry:_init()
-    self.handle = Gtk.Box{
+    local dialog = Gtk.Window{
         id = "tweet_entry",
-        spacing = 3,
-        Gtk.Label{ id = "lbl_chars", label = "0", width_chars = 3 },
-        Gtk.Entry{ id = "txt_entry", placeholder_text = "Send a tweet", max_length = 140, hexpand = true }, --FIXME: multiline
-        Gtk.Button{ id = "cmd_tweet", label = "Tweet" },
+        title = "Compose",
+        Gtk.Box{
+            orientation = "VERTICAL",
+            margin = 3,
+            Gtk.TextView{
+                id = "entry",
+                width_request = 250,
+                height_request = 100,
+                wrap_mode = "WORD_CHAR",
+                on_key_release_event = self:bind(self.cmd_entry__on_key_release),
+            },
+            Gtk.Toolbar{
+                hexpand = true,
+                Gtk.ToolButton{
+                    id = "add_image",
+                    icon_name = "image-x-generic",
+                    tooltip_text = "Upload media",
+                },
+                Gtk.ToolButton{
+                    id = "add_emoji",
+                    icon_name = "face-smile",
+                    tooltip_text = "Insert emoji",
+                },
+                { Gtk.SeparatorToolItem{ draw = false }, expand = true },
+                Gtk.ToolItem{
+                    Gtk.Box {
+                        spacing = 3,
+                        Gtk.Label{ id = "chars", label = "0" },
+                        Gtk.Button{
+                            id = "cmd_send",
+                            label = "Send",
+                            on_clicked = self:bind(self.cmd_send__on_clicked),
+                        },
+                    }
+                },
+            },
+        }
     }
 
-    local child = self.handle.child
-    self.lbl_chars = child.lbl_chars
-    self.txt_entry = child.txt_entry
-    self.cmd_tweet = child.cmd_tweet
+    dialog:show_all()
+    dialog:set_keep_above(true)
 
-    self.txt_entry.on_activate = self:bind(self.txt_entry__on_activate)
-    self.cmd_tweet.on_clicked = self:bind(self.cmd_tweet__on_clicked)
+    local child = dialog.child
+    self.handle = dialog
+    self.entry = child.entry
+    self.chars = child.chars
+
+    self.buffer = self.entry:get_buffer()
 end
 
-function tweet_entry:txt_entry__on_activate(widget)
-    local text = widget:get_text()
-    signal.emit("a_tweet", text, function(tweet)
-        self.txt_entry:set_text ""
-        return signal.emit("ui_tweet_sent", tweet)
-    end)
+function tweet_entry:cmd_send__on_clicked()
+    local iter_s, iter_e = self.buffer:get_bounds()
+    local text = self.buffer:get_text(iter_s, iter_e)
+    self.handle:set_sensitive(false)
+    return signal.emit("a_tweet", text, {
+        ok = function(tweet)
+            self.handle:destroy()
+            return signal.emit("ui_tweet_sent", tweet)
+        end,
+        error = function(err)
+            self.handle:set_sensitive(true)
+            return err
+        end,
+    })
 end
 
-function tweet_entry:cmd_tweet__on_clicked()
-    self.txt_entry:activate()
+function tweet_entry:cmd_entry__on_key_release()
+    local len = self.buffer:get_end_iter():get_offset()  --FIXME: this probably isn't how twitter measures tweet length
+    return self.chars:set_label(len)
 end
 
 return tweet_entry

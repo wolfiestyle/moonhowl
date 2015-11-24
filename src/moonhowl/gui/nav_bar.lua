@@ -2,9 +2,13 @@ local lgi = require "lgi"
 local Gtk = lgi.Gtk
 local object = require "moonhowl.object"
 local signal = require "moonhowl.signal"
+local ui = require "moonhowl.ui"
 local location = require "moonhowl.location"
 
 local nav_bar = object:extend()
+
+-- class constructors aren't first class :c
+local function tweet_entry_new() return ui.tweet_entry:new() end
 
 function nav_bar:_init(parent)
     self.parent = parent
@@ -13,7 +17,7 @@ function nav_bar:_init(parent)
         Gtk.ToolButton{
             icon_name = "document-new",
             tooltip_text = "Compose",
-            on_clicked = signal.bind_emit("ui_compose")
+            on_clicked = tweet_entry_new,
         },
         Gtk.ToolButton{
             icon_name = "view-refresh",
