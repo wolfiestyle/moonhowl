@@ -15,8 +15,8 @@ function profile_view:_init()
     }
 end
 
-function profile_view:set_content(user)
-    self.user_info:set_content(user)
+function profile_view:set_content(profile)
+    self.user_info:set_content(profile.user)
 end
 
 return profile_view

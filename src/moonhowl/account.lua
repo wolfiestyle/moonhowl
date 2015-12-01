@@ -70,10 +70,14 @@ function account:api_call(ctx, method, args)
     handle = fn(self.client, args)
 end
 
+local function make_profile(user)
+    return { _type = "user_profile", user = user }
+end
+
 function account:open_profile(ctx, name, args)
     args.screen_name = name
     args._callback = function(user)
-        return ctx:set_content(user, "@" .. user.screen_name)
+        return ctx:set_content(make_profile(user), "@" .. user.screen_name)
     end
     return self.client:get_user(args)
 end
@@ -81,7 +85,7 @@ end
 function account:open_profile_id(ctx, id, args)
     args.user_id = id
     args._callback = function(user)
-        return ctx:set_content(user, "@" .. user.screen_name)
+        return ctx:set_content(make_profile(user), "@" .. user.screen_name)
     end
     return self.client:get_user(args)
 end

@@ -17,7 +17,7 @@ local type_to_view = {
     tweet = "tweet_view",
     tweet_list = "tweet_list_view",
     tweet_search = "tweet_search_view",
-    user = "profile_view",
+    user = "user_view",
     user_list = "user_list_view",
     user_cursor = "user_cursor_view",
     dm = "dm_view",
@@ -34,6 +34,8 @@ local type_to_view = {
     --friend_list_str = "default_min_view",
     stream_event = "stream_event_view",
     stream_dm = "dm_view",
+    -- custom
+    user_profile = "profile_view",
 }
 
 function ui.view_for(obj, default_name)
