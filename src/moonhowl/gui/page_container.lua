@@ -31,10 +31,6 @@ function page_container:set_child(obj)
     return self.container:add(obj.handle)
 end
 
-function page_container:add(item)
-    return self.child:add(item)
-end
-
 -- prepares the list container for a stream
 function page_container:setup_view(view_name, label)
     print("~setup_view", label, view_name)
@@ -53,7 +49,7 @@ end
 
 -- streaming connections will call this
 function page_container:append_content(content)
-    return self.child:add(ui.view_for(content, "default_min_view"))
+    return self.child:add_top(ui.view_for(content, "default_min_view"), true)
 end
 
 function page_container:set_location(loc)
@@ -73,12 +69,14 @@ function page_container:refresh()
 end
 
 function page_container:scroll__on_edge_reached(_, pos)
+    local obj, callback = self.child
     if pos == "BOTTOM" then
-        local obj = self.child
-        local callback = obj.on_scroll_bottom
-        if callback then
-            return callback(obj)
-        end
+        callback = obj.on_scroll_bottom
+    elseif pos == "TOP" then
+        callback = obj.on_scroll_top
+    end
+    if callback then
+        return callback(obj)
     end
 end
 
