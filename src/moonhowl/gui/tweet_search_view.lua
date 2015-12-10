@@ -1,12 +1,9 @@
 local ui = require "moonhowl.ui"
-local list_view = ui.list_view
+local list_view_scrolled = ui.list_view_scrolled
 
-local tweet_search_view = list_view:extend()
+local tweet_search_view = list_view_scrolled:extend()
 
 tweet_search_view.main_type = "tweet"
-
-function tweet_search_view:set_content(content)
-    return list_view.set_content(self, content.statuses)
-end
+tweet_search_view.content_field = "statuses"
 
 return tweet_search_view
