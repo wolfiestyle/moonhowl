@@ -6,10 +6,17 @@ local ui = require "moonhowl.ui"
 
 local list_view = object:extend()
 
+local function ident(arg) return arg end
+
 function list_view:_init()
     self.count = 0
     self.buffer = {}
     self.max_size = 50
+
+    -- value set by derived classes
+    local field = self.content_field
+    self._get_list = field and function(content) return content[field] end or ident
+
     self.handle = Gtk.ListBox{
         id = "list_view",
         selection_mode = "NONE",
@@ -67,7 +74,8 @@ function list_view:_update_state(content)
     end
 end
 
-function list_view:add_list_top(list)
+function list_view:add_list_top(content)
+    local list = self._get_list(content)
     local on_top = self:get_scroll_pos() == 0
     for i = #list, 1, -1 do
         local obj = list[i]
@@ -79,7 +87,8 @@ function list_view:add_list_top(list)
     end
 end
 
-function list_view:add_list_bottom(list)
+function list_view:add_list_bottom(content)
+    local list = self._get_list(content)
     for _, obj in ipairs(list) do
         local view = ui.view_for(obj)
         self:add_bottom(view)

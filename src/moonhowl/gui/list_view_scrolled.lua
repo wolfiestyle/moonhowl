@@ -7,15 +7,6 @@ local list_view_scrolled = list_view:extend()
 function list_view_scrolled:_init()
     list_view._init(self)
 
-    -- value set by derived classes
-    local field, get_list = self.content_field
-    if field then
-        function get_list(content) return content[field] end
-    else
-        function get_list(content) return content end
-    end
-    self._get_list = get_list
-
     local function on_error(err)
         self.loading = false
         return err
@@ -33,7 +24,7 @@ function list_view_scrolled:_init()
         ok = function(content)
             self.loading = false
             -- remove the overlapping element on bottom insert
-            local list = get_list(content)
+            local list = self._get_list(content)
             if self.tail == list[1] then
                 table.remove(list, 1)
             end
@@ -54,12 +45,12 @@ end
 
 function list_view_scrolled:add_list_top(content)
     pre_add_common(self, content)
-    return list_view.add_list_top(self, self._get_list(content))
+    return list_view.add_list_top(self, content)
 end
 
 function list_view_scrolled:add_list_bottom(content)
     pre_add_common(self, content)
-    return list_view.add_list_bottom(self, self._get_list(content))
+    return list_view.add_list_bottom(self, content)
 end
 
 function list_view_scrolled:refresh()

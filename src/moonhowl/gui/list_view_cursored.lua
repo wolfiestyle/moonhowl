@@ -8,15 +8,6 @@ function list_view_cursored:_init()
     list_view._init(self)
     self.max_size = false
 
-    -- value set by derived classes
-    local field, get_list = self.content_field
-    if field then
-        function get_list(content) return content[field] end
-    else
-        function get_list(content) return content end
-    end
-    self._get_list = get_list
-
     self._on_content_bottom = {
         ok = function(content)
             self.loading = false
@@ -31,12 +22,12 @@ end
 
 function list_view_cursored:add_list_top(content)
     self.last_content = content
-    return list_view.add_list_top(self, self._get_list(content))
+    return list_view.add_list_top(self, content)
 end
 
 function list_view_cursored:add_list_bottom(content)
     self.last_content = content
-    return list_view.add_list_bottom(self, self._get_list(content))
+    return list_view.add_list_bottom(self, content)
 end
 
 function list_view_cursored:on_scroll_bottom()
