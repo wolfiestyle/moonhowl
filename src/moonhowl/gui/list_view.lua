@@ -96,6 +96,7 @@ end
 
 function list_view:limit_size(max)
     max = max or self.max_size
+    if not max then return end
     -- gtk doesn't seem to have a more efficient way to do this
     local items = self.handle:get_children()
     local n = #items
