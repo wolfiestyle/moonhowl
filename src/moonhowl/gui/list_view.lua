@@ -4,6 +4,7 @@ local Moonhowl = lgi.Moonhowl
 local object = require "moonhowl.object"
 local ui = require "moonhowl.ui"
 local fifo = require "moonhowl.fifo"
+local config = require "moonhowl.config"
 
 local list_view = object:extend()
 
@@ -25,7 +26,6 @@ end
 function list_view:_init()
     self.count = 0
     self.buffer = fifo()
-    self.max_size = 50
 
     -- value set by derived classes
     local field = self.content_field
@@ -135,8 +135,8 @@ function list_view:clear()
     end
 end
 
-function list_view:limit_size(max)
-    max = max or self.max_size
+function list_view:limit_size()
+    local max = self.max_size or config.list_view_max
     if not max then return end
     -- gtk doesn't seem to have a more efficient way to do this
     local items = self.handle:get_children()
@@ -176,7 +176,7 @@ function list_view:on_scroll_top()
     print(">>scroll_top:", self.count)
     if not self.buffer.empty() then
         self.prev_height = self.handle:get_adjustment().upper  -- received by on_size_allocate
-        for obj in self.buffer.iter(10) do
+        for obj in self.buffer.iter(config.list_view_buffer_display) do
             self.handle:prepend(create_row(obj))
         end
         print("buffer remaining:", self.buffer.count())

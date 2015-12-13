@@ -10,4 +10,8 @@ return {
         height = 640,
     },
     tabs = {},
+    -- maximum number of elements displayed on a list_view
+    list_view_max = 50,
+    -- number of elements displayed from the buffer when scrolling to top
+    list_view_buffer_display = 10,
 }
