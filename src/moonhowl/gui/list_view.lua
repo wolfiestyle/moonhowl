@@ -9,6 +9,19 @@ local list_view = object:extend()
 
 local function ident(arg) return arg end
 
+-- sorted lists: select head/tail by sort order
+local function update_sorted(self, content)
+    if content and content._type == self.main_type then
+        local head, tail = self.head, self.tail
+        if not head or content > head then
+            self.head = content
+        end
+        if not tail or content < tail then
+            self.tail = content
+        end
+    end
+end
+
 function list_view:_init()
     self.count = 0
     self.buffer = fifo()
@@ -26,6 +39,15 @@ function list_view:_init()
             if self.cleanup then return self.cleanup() end
         end,
     }
+
+    -- a derived class can define the sort order
+    if self.sort_func then
+        self.handle:set_sort_func(self.sort_func)
+        if self.main_type then
+            self._update_head = update_sorted
+            self._update_tail = update_sorted
+        end
+    end
 end
 
 local function create_row(obj)
@@ -54,23 +76,32 @@ function list_view:add_top(obj, limit, on_top)
         print("buffered:", self.buffer.count())
     end
 
-    return self:_update_state(obj.content)
+    return self:_update_head(obj.content)
 end
 
 -- called when scrolling bottom (older content)
 function list_view:add_bottom(obj)
     self.count = self.count + 1
     self.handle:add(create_row(obj))
-    return self:_update_state(obj.content)
+    return self:_update_tail(obj.content)
 end
 
-function list_view:_update_state(content)
-    if content and self.main_type and content._type == self.main_type then
-        if not self.head or content > self.head then
-            self.head = content
-        end
-        if not self.tail or content < self.tail then
+-- unsorted default: last top insert is head
+function list_view:_update_head(content)
+    if content then
+        self.head = content
+        if not self.tail then
             self.tail = content
+        end
+    end
+end
+
+-- unsorted default: last bottom insert is tail
+function list_view:_update_tail(content)
+    if content then
+        self.tail = content
+        if not self.head then
+            self.head = content
         end
     end
 end

@@ -30,6 +30,7 @@ local function format(fmt, user)
 end
 
 function user_view:set_content(user)
+    self.content = user
     self.name:set_label(format('<big><b>$name</b></big>\n@$screen_name', user))
     self.info:set_label(format([[
 <b>Followers:</b> $followers_count <b>Following:</b> $friends_count <b>Listed:</b> $listed_count
