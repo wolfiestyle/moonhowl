@@ -3,6 +3,7 @@ local Gtk = lgi.Gtk
 local Moonhowl = lgi.Moonhowl
 local object = require "moonhowl.object"
 local ui = require "moonhowl.ui"
+local fifo = require "moonhowl.fifo"
 
 local list_view = object:extend()
 
@@ -10,7 +11,7 @@ local function ident(arg) return arg end
 
 function list_view:_init()
     self.count = 0
-    self.buffer = {}
+    self.buffer = fifo()
     self.max_size = 50
 
     -- value set by derived classes
@@ -49,8 +50,8 @@ function list_view:add_top(obj, limit, on_top)
             self:limit_size()
         end
     else  -- scrollbar not on top, add object to the buffer
-        self.buffer[#self.buffer + 1] = obj
-        print("buffered:", #self.buffer)
+        self.buffer.push(obj)
+        print("buffered:", self.buffer.count())
     end
 
     return self:_update_state(obj.content)
@@ -98,7 +99,7 @@ end
 function list_view:clear()
     if self.count > 0 then
         self.count = 0
-        self.buffer = {}
+        self.buffer = fifo()
         return self.handle:foreach(Gtk.Widget.destroy)
     end
 end
@@ -142,13 +143,12 @@ end
 -- when scrolling back to top, display all the buffered elements
 function list_view:on_scroll_top()
     print(">>scroll_top:", self.count)
-    if next(self.buffer) then
+    if not self.buffer.empty() then
         self.prev_height = self.handle:get_adjustment().upper  -- received by on_size_allocate
-        for _, obj in ipairs(self.buffer) do
+        for obj in self.buffer.iter(10) do
             self.handle:prepend(create_row(obj))
         end
-        print("buffer displayed:", #self.buffer)
-        self.buffer = {}
+        print("buffer remaining:", self.buffer.count())
     else
         return self:limit_size()
     end
