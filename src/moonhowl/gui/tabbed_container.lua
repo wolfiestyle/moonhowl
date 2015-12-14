@@ -77,7 +77,8 @@ function tabbed_container:init_tabs()
     end
 end
 
-function tabbed_container:handle__on_switch_page(_, page_w)
+function tabbed_container:handle__on_switch_page(_, page_w, page_num)
+    config.tabs.current = page_num
     local obj = self.child[page_w]
     return signal.emit("ui_set_current_uri", obj.location and obj.location.uri)
 end
