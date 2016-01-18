@@ -36,38 +36,34 @@ function cb_handler:get_id()
     return self.seq_id
 end
 
-function cb_handler:add(obj, callback)
-    local is_table = type(callback) == "table"
-
+function cb_handler:add(obj)
     local updater
     if obj._type == "future" then
         updater = function()
             local ready, res, code_or_err = obj:peek(true)
             if ready then
-                if res ~= nil then
-                    (is_table and callback.ok or callback)(res, code_or_err)
-                else
-                    self.on_error(code_or_err, is_table and callback.error)
+                if res == nil then
+                    self.on_error(code_or_err)
                 end
                 return true
             end
         end
     elseif obj._type == "stream" then
+        obj:map(function(data, err)
+            if type(data) == "table" then
+                data._seq_id = self:get_id()
+            end
+            return data, err
+        end)
         updater = function()
             local active, _, err = obj:is_active(true)
             if not active then
                 io_stderr:write("cb_handler: stream closed: ", err, "\n")
-                if is_table and callback.error then
-                    callback.error(err)
-                end
                 return true
             end
             for data in obj:iter() do
-                if type(data) == "table" then
-                    data._seq_id = self:get_id();
-                    (is_table and callback.ok or callback)(data)
-                else
-                    self.on_error(data, is_table and callback.error)
+                if type(data) ~= "table" then
+                    self.on_error(data)
                 end
             end
         end
@@ -82,12 +78,7 @@ function cb_handler:add(obj, callback)
     end
 end
 
-function cb_handler.on_error(err, err_handler)
-    if err_handler then
-        local ret = err_handler(err)
-        if not ret then return end
-        err = ret
-    end
+function cb_handler.on_error(err)
     err = tostring(err)
     io_stderr:write("cb_handler: ", err, "\n")
     return signal.emit("ui_message", err, true)

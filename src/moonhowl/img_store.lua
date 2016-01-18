@@ -36,19 +36,17 @@ local function dispatch(url, data)
     requests[url] = nil
 end
 
-function img_store.new_request(url, obj)
+function img_store.new_request(url, obj, client)
     cache[url] = false
     requests[url] = { obj }
-    local cb = function(data, code)
-        return dispatch(url, code == 200 and data)
-    end
-    return {
+    return client:http_request{
         url = url,
-        _callback = {
-            ok = cb,
-            error = cb,
-        },
+        _async = true,
     }
+    :map(function(data, code)
+        dispatch(url, code == 200 and data)
+        return data, code
+    end)
 end
 
 return img_store

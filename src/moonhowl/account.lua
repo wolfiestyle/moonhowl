@@ -7,10 +7,10 @@ local config = require "moonhowl.config"
 
 local account = object:extend()
 
-function account:_init(cbh)
-    self.cb_handler = cbh
-    self.client = twitter.api.new(config.app_keys, cbh.http)
-    self.client:set_callback_handler(self.cb_handler)
+function account:_init(as_h)
+    self.as_handler = as_h
+    self.client = twitter.api.new(config.app_keys, as_h.http)
+    self.client:set_async_handler(self.as_handler)
 
     signal.listen("a_api_call", self.api_call, self)
     signal.listen("a_open_profile", self.open_profile, self)
@@ -35,12 +35,12 @@ function account:login(acct_name)
     end
 
     --[[
-    self.client:verify_credentials{
-        _callback = function(user)
-            self.user = user
-            signal.emit("ui_message", "logged as " .. user.screen_name)
-        end,
-    }
+    self.client:verify_credentials{ _async = true }:map(function(user, err)
+        if user == nil then return nil, err end
+        self.user = user
+        signal.emit("ui_message", "logged as " .. user.screen_name)
+        return user
+    end)
     ]]
 end
 
@@ -53,21 +53,25 @@ function account:api_call(ctx, method, args)
     if fn == nil then
         return _error("Unknown method: " .. method)
     end
-    local handle
+    args._async = true
+    local handle = fn(self.client, args)
     if fn.stream then
         ctx:setup_view("tweet_list_view", method)
         ctx.child.cleanup = function()
             return handle:close()
         end
-        args._callback = function(obj)
-            return ctx:append_content(obj)
-        end
+        handle:map(function(obj, err)
+            if obj == nil then return nil, err end
+            ctx:append_content(obj)
+            return obj
+        end)
     else
-        args._callback = function(obj)
-            return ctx:set_content(obj, obj._type)
-        end
+        handle:map(function(obj, err)
+            if obj == nil then return nil, err end
+            ctx:set_content(obj, obj._type)
+            return obj
+        end)
     end
-    handle = fn(self.client, args)
 end
 
 local function make_profile(user)
@@ -76,49 +80,59 @@ end
 
 function account:open_profile(ctx, name, args)
     args.screen_name = name
-    args._callback = function(user)
-        return ctx:set_content(make_profile(user), "@" .. user.screen_name)
-    end
-    return self.client:get_user(args)
+    args._async = true
+    return self.client:get_user(args):map(function(user, err)
+        if user == nil then return nil, err end
+        ctx:set_content(make_profile(user), "@" .. user.screen_name)
+        return user
+    end)
 end
 
 function account:open_profile_id(ctx, id, args)
     args.user_id = id
-    args._callback = function(user)
-        return ctx:set_content(make_profile(user), "@" .. user.screen_name)
-    end
-    return self.client:get_user(args)
+    args._async = true
+    return self.client:get_user(args):map(function(user, err)
+        if user == nil then return nil, err end
+        ctx:set_content(make_profile(user), "@" .. user.screen_name)
+        return user
+    end)
 end
 
 function account:show_tweet(ctx, id, args)
     args.id = id
-    args._callback = function(tweet)
-        return ctx:set_content(tweet, "tweet")
-    end
-    return self.client:get_tweet(args)
+    args._async = true
+    return self.client:get_tweet(args):map(function(tweet, err)
+        if tweet == nil then return nil, err end
+        ctx:set_content(tweet, "tweet")
+        return tweet
+    end)
 end
 
 function account:tweet(text, cb, args)
     args = args or {}
     args.status = text
-    args._callback = cb
-    return self.client:tweet(args)
+    args._async = true
+    return self.client:tweet(args):map(cb)
 end
 
 function account:search(ctx, str, args)
     args.q = str
-    args._callback = function(res)
-        return ctx:set_content(res, "search")
-    end
-    return self.client:search_tweets(args)
+    args._async = true
+    return self.client:search_tweets(args):map(function(res, err)
+        if res == nil then return nil, err end
+        ctx:set_content(res, "search")
+        return res
+    end)
 end
 
 function account:search_users(ctx, str, args)
     args.q = str
-    args._callback = function(res)
-        return ctx:set_content(res, "search")
-    end
-    return self.client:search_users(args)
+    args._async = true
+    return self.client:search_users(args):map(function(res, err)
+        if res == nil then return nil, err end
+        ctx:set_content(res, "search")
+        return res
+    end)
 end
 
 local function process_list_args(params, id_or_owner, slug)
@@ -134,28 +148,36 @@ local function process_list_args(params, id_or_owner, slug)
 end
 
 function account:timeline(ctx, name, id_or_owner, slug, params)
-    params._callback = function(tl)
-        return ctx:set_content(tl, name)
-    end
+    local handle
+    params._async = true
     if name == "home" then
-        return self.client:get_home_timeline(params)
+        handle = self.client:get_home_timeline(params)
     elseif name == "mentions" then
-        return self.client:get_mentions(params)
+        handle = self.client:get_mentions(params)
     elseif name == "list" then
         if process_list_args(params, id_or_owner, slug) then
-            return self.client:get_list_timeline(params)
+            handle = self.client:get_list_timeline(params)
+        else
+            return
         end
     else
         return _error("Unknown timeline: " .. name)
     end
+    handle:map(function(tl, err)
+        if tl == nil then return nil, err end
+        ctx:set_content(tl, name)
+        return tl
+    end)
 end
 
 function account:show_list(ctx, id_or_owner, slug, params)
-    params._callback = function(tl)
-        return ctx:set_content(tl, "list")
-    end
     if process_list_args(params, id_or_owner, slug) then
-        return self.client:get_list_members(params)
+        params._async = true
+        return self.client:get_list_members(params):map(function(tl, err)
+            if tl == nil then return nil, err end
+            ctx:set_content(tl, "list")
+            return tl
+        end)
     end
 end
 
@@ -168,7 +190,7 @@ function account:request_image(ctx, url)
     if img == false then    -- request already sent
         return img_store.join_request(url, ctx)
     else
-        return self.client:http_request(img_store.new_request(url, ctx))
+        return img_store.new_request(url, ctx, self.client)
     end
 end
 

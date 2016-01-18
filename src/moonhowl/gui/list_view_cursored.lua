@@ -8,16 +8,12 @@ function list_view_cursored:_init()
     list_view._init(self)
     self.max_size = false
 
-    self._on_content_bottom = {
-        ok = function(content)
-            self.loading = false
-            return self:add_list_bottom(content)
-        end,
-        error = function(err)
-            self.loading = false
-            return err
-        end,
-    }
+    self._on_content_bottom = function(content, err)
+        self.loading = false
+        if content == nil then return nil, err end
+        self:add_list_bottom(content)
+        return content
+    end
 end
 
 function list_view_cursored:add_list_top(content)
@@ -34,9 +30,7 @@ function list_view_cursored:on_scroll_bottom()
     print("scroll_bottom:", self.count, self.tail)
     if self.last_content and not self.loading then
         self.loading = true
-        return self.last_content:next{
-            _callback = self._on_content_bottom,
-        }
+        return self.last_content:next{ _async = true }:map(self._on_content_bottom)
     end
 end
 

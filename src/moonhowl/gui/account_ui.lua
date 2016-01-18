@@ -7,12 +7,12 @@ local config = require "moonhowl.config"
 
 local account_ui = object:extend()
 
-function account_ui:_init(cbh, login_cb)
+function account_ui:_init(as_h, login_cb)
     self.state = 0
     self.acc_rows = {}
     self.login_cb = login_cb
-    self.client = twitter.api.new(config.app_keys, cbh.http)
-    self.client:set_callback_handler(cbh)
+    self.client = twitter.api.new(config.app_keys, as_h.http)
+    self.client:set_async_handler(as_h)
     self._next = self:bind(self.next_login_step)
     self.infobar = ui.info_bar:new()
 
@@ -208,19 +208,17 @@ function account_ui:next_login_step()
         local oc = self.client.oauth_config
         oc.oauth_token = nil
         oc.oauth_token_secret = nil
-        self.client:oauth_request_token{
-            _callback = {
-                ok = function()
-                    self.state = 1
-                    return self:next_login_step()
-                end,
-                error = function(err)
-                    self.spn1:stop()
-                    self.cmd_retry1:show()
-                    return self.infobar:show(err, true)
-                end,
-            }
-        }
+        self.client:oauth_request_token{ _async = true }:map(function(res, err)
+            if res == nil then
+                self.spn1:stop()
+                self.cmd_retry1:show()
+                self.infobar:show(err, true)
+                return true
+            end
+            self.state = 1
+            self:next_login_step()
+            return true
+        end)
     elseif state == 1 then -- show auth url
         self.state = 2
         self.spn1:stop()
@@ -233,19 +231,20 @@ function account_ui:next_login_step()
         self:_step2_enable(false)
         self.client:oauth_access_token{
             oauth_verifier = self.pin:get_text(),
-            _callback = {
-                ok = function(token)
-                    self.state = 3
-                    self.auth_token = token
-                    return self:next_login_step()
-                end,
-                error = function(err)
-                    self.spn2:stop()
-                    self:_step2_enable(true)
-                    return self.infobar:show(err, true)
-                end,
-            }
+            _async = true,
         }
+        :map(function(token, err)
+            if token == nil then
+                self.spn2:stop()
+                self:_step2_enable(true)
+                self.infobar:show(err, true)
+                return true
+            end
+            self.state = 3
+            self.auth_token = token
+            self:next_login_step()
+            return true
+        end)
     elseif state == 3 then -- done
         self.state = 0
         self.spn2:stop()

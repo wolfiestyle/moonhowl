@@ -7,31 +7,24 @@ local list_view_scrolled = list_view:extend()
 function list_view_scrolled:_init()
     list_view._init(self)
 
-    local function on_error(err)
+    self._on_content_top = function(content, err)
         self.loading = false
-        return err
+        if content == nil then return nil, err end
+        self:add_list_top(content)
+        return content
     end
 
-    self._on_content_top = {
-        ok = function(content)
-            self.loading = false
-            return self:add_list_top(content)
-        end,
-        error = on_error,
-    }
-
-    self._on_content_bottom = {
-        ok = function(content)
-            self.loading = false
-            -- remove the overlapping element on bottom insert
-            local list = self._get_list(content)
-            if self.tail == list[1] then
-                table.remove(list, 1)
-            end
-            return self:add_list_bottom(content)
-        end,
-        error = on_error,
-    }
+    self._on_content_bottom = function(content, err)
+        self.loading = false
+        if content == nil then return nil, err end
+        -- remove the overlapping element on bottom insert
+        local list = self._get_list(content)
+        if self.tail == list[1] then
+            table.remove(list, 1)
+        end
+        self:add_list_bottom(content)
+        return content
+    end
 end
 
 local function pre_add_common(self, content)
@@ -60,8 +53,9 @@ function list_view_scrolled:refresh()
         local first_tw = self.head
         return self.last_content:_source_method{
             since_id = first_tw and first_tw.id_str,
-            _callback = self._on_content_top,
+            _async = true,
         }
+        :map(self._on_content_top)
     end
 end
 
@@ -71,8 +65,9 @@ function list_view_scrolled:on_scroll_bottom()
         self.loading = true
         return self.last_content:_source_method{
             max_id = self.tail.id_str,
-            _callback = self._on_content_bottom,
+            _async = true,
         }
+        :map(self._on_content_bottom)
     end
 end
 

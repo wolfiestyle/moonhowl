@@ -62,16 +62,15 @@ function tweet_entry:cmd_send__on_clicked()
     local iter_s, iter_e = self.buffer:get_bounds()
     local text = self.buffer:get_text(iter_s, iter_e)
     self.handle:set_sensitive(false)
-    return signal.emit("a_tweet", text, {
-        ok = function(tweet)
-            self.handle:destroy()
-            return signal.emit("ui_tweet_sent", tweet)
-        end,
-        error = function(err)
+    return signal.emit("a_tweet", text, function(tweet, err)
+        if tweet == nil then
             self.handle:set_sensitive(true)
-            return err
-        end,
-    })
+            return nil, err  --TODO: error feedback in the same window
+        end
+        self.handle:destroy()
+        signal.emit("ui_tweet_sent", tweet)
+        return tweet
+    end)
 end
 
 function tweet_entry:cmd_entry__on_key_release()
